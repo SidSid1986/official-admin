@@ -14,41 +14,77 @@
 </template>
 
 <script setup>
-import { ref, shallowRef, onBeforeUnmount } from 'vue';
-import { Editor, Toolbar } from '@wangeditor/editor-for-vue';
-import '@wangeditor/editor/dist/css/style.css';
+import { ref, shallowRef, onBeforeUnmount } from "vue";
+import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
+import "@wangeditor/editor/dist/css/style.css";
 
 // --- Props & Emits (支持 v-model) ---
 const props = defineProps({
   modelValue: {
     type: String,
-    default: '<p></p>'
-  }
+    default: "<p></p>",
+  },
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(["update:modelValue"]);
 
 // --- 响应式数据 ---
 const editorRef = shallowRef(); // 必须用 shallowRef
 const valueHtml = ref(props.modelValue);
-const mode = ref('default');
+const mode = ref("default");
 
 // --- 配置项 ---
 const toolbarConfig = {};
 
 const editorConfig = {
-  placeholder: '请输入内容...',
+  placeholder: "请输入内容...",
 
-  // 1. 颜色配置 (预设色板)
-  COLOR_COLORS: [
-    '#000000', '#333333', '#666666', '#999999', '#cccccc', '#ffffff',
-    '#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3',
-    '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39',
-    '#ffeb3b', '#ffc107', '#ff9800', '#ff5722', '#795548', '#9e9e9e'
-  ],
-
-  // 2. 图片上传配置
+  // 2. 图片上传配置`
   MENU_CONF: {
+    color: {
+      colors: [
+        "#16418A",
+        "#2E9DA4",
+
+        "#000000",
+        "#333333",
+        "#666666",
+        "#999999",
+        "#cccccc",
+        "#ffffff",
+
+        "#003366",
+        "#0055A5",
+        "#4A90E2",
+        "#5B9BD5",
+        "#8FC1E3",
+
+        "#D9534F",
+        "#D9230F",
+        "#F0AD4E",
+        "#FFC107",
+        "#FF8C00",
+        "#E67E22",
+
+        "#5CB85C",
+        "#3F9D3F",
+        "#27AE60",
+        "#1ABC9C",
+        "#16A085",
+
+        "#8E44AD",
+        "#9B59B6",
+        "#E91E63",
+        "#D81B60",
+        "#F06292",
+
+        "#34495E",
+        "#7F8C8D",
+        "#BDC3C7",
+        "#F39C12",
+        "#C0392B",
+      ],
+    },
     uploadImage: {
       // 如果后端接口简单，可以直接配 server 和 fieldName，编辑器会自动发 FormData
       // server: '/api/upload/image',
@@ -56,7 +92,7 @@ const editorConfig = {
 
       // 推荐：使用 customUpload 自定义逻辑 (处理 Token、特殊返回格式等)
       customUpload(file, insertFn) {
-        console.log('开始上传图片:', file.name);
+        console.log("开始上传图片:", file.name);
 
         // ================= 真实场景代码 (请取消注释并安装 axios) =================
         /*
@@ -91,9 +127,11 @@ const editorConfig = {
         // ================= 模拟上传代码 (演示用，实际使用请删除此块) =================
         setTimeout(() => {
           // 模拟一个随机图片地址
-          const mockUrl = `https://via.placeholder.com/400x200?text=${encodeURIComponent(file.name)}`;
+          const mockUrl = `https://via.placeholder.com/400x200?text=${encodeURIComponent(
+            file.name
+          )}`;
 
-          console.log('模拟上传成功:', mockUrl);
+          console.log("模拟上传成功:", mockUrl);
           alert(`模拟上传成功：${file.name}`);
 
           // 关键：调用 insertFn 将图片插入编辑器
@@ -101,15 +139,15 @@ const editorConfig = {
           insertFn(mockUrl, file.name, mockUrl);
         }, 1000);
         // =======================================================================
-      }
-    }
-  }
+      },
+    },
+  },
 };
 
 // --- 事件处理函数 ---
 
 const handleCreated = (editor) => {
-  console.log('编辑器已创建', editor);
+  console.log("编辑器已创建", editor);
   editorRef.value = editor;
 };
 
@@ -117,19 +155,19 @@ const handleChange = (editor) => {
   const html = editor.getHtml();
   valueHtml.value = html;
   // 触发 update:modelValue 事件，同步给父组件的 v-model
-  emit('update:modelValue', html);
+  emit("update:modelValue", html);
 };
 
 const handleDestroyed = (editor) => {
-  console.log('编辑器已销毁', editor);
+  console.log("编辑器已销毁", editor);
 };
 
 const handleFocus = (editor) => {
-  console.log('编辑器获得焦点');
+  console.log("编辑器获得焦点");
 };
 
 const handleBlur = (editor) => {
-  console.log('编辑器失去焦点');
+  console.log("编辑器失去焦点");
 };
 
 const customAlert = (info, type) => {
