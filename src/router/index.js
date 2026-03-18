@@ -1,3 +1,11 @@
+/*
+ * @Author: Sid Li
+ * @Date: 2026-03-16 15:03:38
+ * @LastEditors: Sid Li
+ * @LastEditTime: 2026-03-18 17:00:02
+ * @FilePath: \admin-demo\src\router\index.js
+ * @Description:
+ */
 import { createWebHashHistory, createRouter } from "vue-router";
 
 const routes = [
@@ -11,7 +19,7 @@ const routes = [
       {
         path: "home",
         name: "Home",
-        // 【修改点】路径指向 views 目录
+
         component: () => import("@/views/home.vue"),
         meta: {
           title: "首页",
@@ -22,26 +30,108 @@ const routes = [
 
       // 新闻news
       {
-        path: "news",
-        name: "News",
-        // 确保这个文件也存在
-        component: () => import("@/views/news.vue"),
+        path: "news/newsList",
+        name: "NewsList",
+
+        component: () => import("@/views/news/newsList.vue"),
         meta: {
-          title: "新闻",
+          title: "新闻列表",
           icon: "Monitor",
-          breadcrumb: ["新闻"],
+          breadcrumb: ["新闻列表"],
+        },
+      },
+      {
+        path: `news/newsAddEdit/:id?`,
+        name: "NewsAddEdit",
+
+        component: () => import("@/views/news/newsAddEdit.vue"),
+        meta: {
+          title: "增加编辑新闻",
+          icon: "Document",
+          breadcrumb: ["增加编辑新闻"],
+        },
+      },
+      //服务支持
+      {
+        path: "service",
+        name: "Service",
+
+        component: () => import("@/views/service.vue"),
+        meta: {
+          title: "服务支持",
+          icon: "Document",
+          breadcrumb: ["服务支持"],
+        },
+      },
+      //关于我们
+      {
+        path: "about",
+        name: "About",
+
+        component: () => import("@/views/about.vue"),
+        meta: {
+          title: "关于我们",
+          icon: "Document",
+          breadcrumb: ["关于我们"],
+        },
+      },
+      //资料下载
+      {
+        path: "download",
+        name: "Download",
+
+        component: () => import("@/views/download.vue"),
+        meta: {
+          title: "资料下载",
+          icon: "Document",
+          breadcrumb: ["资料下载"],
+        },
+      },
+      //产品管理
+      {
+        path: "cms/productList",
+        name: "ProductList",
+
+        component: () => import("@/views/cms/productList.vue"),
+        meta: {
+          title: "产品列表",
+          icon: "Document",
+          breadcrumb: ["产品列表"],
+        },
+      },
+      //增加编辑产品
+      {
+        path: `cms/productAddEdit/:id?`,
+        name: "ProductAddEdit",
+
+        component: () => import("@/views/cms/productAddEdit.vue"),
+        meta: {
+          title: "增加编辑产品",
+          icon: "Document",
+          breadcrumb: ["增加编辑产品"],
         },
       },
 
+      //解决方案
       {
-        path: "cms/product",
-        name: "product1",
-        // 确保这个文件也存在
-        component: () => import("@/views/cms/product.vue"),
+        path: "solution/solutionList",
+        name: "SolutionList",
+        component: () => import("@/views/solution/solutionList.vue"),
         meta: {
-          title: "产品管理",
+          title: "解决方案列表",
           icon: "Document",
-          breadcrumb: ["官网内容管理", "产品管理"],
+          breadcrumb: ["解决方案列表"],
+        },
+      },
+      {
+        path: "solution/solutionAddEdit/:id?",
+        name: "SolutionAddEdit",
+
+        component: () => import("@/views/solution/solutionAddEdit.vue"),
+        meta: {
+          title: "增加编辑解决方案",
+          icon: "Document",
+          breadcrumb: ["增加编辑解决方案"],
         },
       },
     ],

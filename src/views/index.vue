@@ -56,24 +56,58 @@
 
 
           <!-- 新闻news -->
-          <el-menu-item index="/news">
+          <el-sub-menu index="solution-group">
+            <template #title>
+              <el-icon size="24">
+                <Document />
+              </el-icon>
+              <span>新闻管理</span>
+            </template>
+            <el-menu-item index="/news/newsList">新闻列表</el-menu-item>
+            <el-menu-item index="/news/newsAddEdit">增加编辑新闻</el-menu-item>
+          </el-sub-menu>
+          <!-- 服务支持service -->
+          <el-menu-item index="/service">
             <el-icon size="24">
-              <Monitor />
+              <Document />
             </el-icon>
-            <template #title>新闻</template>
+            <template #title>服务支持</template>
           </el-menu-item>
-
-          <!-- 官网内容管理 -->
+          <!-- 关于我们about -->
+          <el-menu-item index="/about">
+            <el-icon size="24">
+              <Document />
+            </el-icon>
+            <template #title>关于我们</template>
+          </el-menu-item>
+          <!-- 资料下载downLoad -->
+          <el-menu-item index="/downLoad">
+            <el-icon size="24">
+              <Document />
+            </el-icon>
+            <template #title>资料下载</template>
+          </el-menu-item>
+          <!-- 产品管理 -->
           <el-sub-menu index="cms-group">
             <template #title>
               <el-icon size="24">
                 <Document />
               </el-icon>
-              <span>官网内容管理</span>
+              <span>产品管理</span>
             </template>
-            <!-- index 对应 router/index.js 中的 path '/cms/product' -->
-            <el-menu-item index="/cms/product">产品管理</el-menu-item>
-            <el-menu-item index="/cms/product2">产品管理2</el-menu-item>
+            <el-menu-item index="/cms/productList">产品列表</el-menu-item>
+            <el-menu-item index="/cms/productAddEdit">增加编辑产品</el-menu-item>
+          </el-sub-menu>
+          <!-- 解决方案solution -->
+          <el-sub-menu index="solution-group">
+            <template #title>
+              <el-icon size="24">
+                <Document />
+              </el-icon>
+              <span>解决方案</span>
+            </template>
+            <el-menu-item index="/solution/solutionList">解决方案列表</el-menu-item>
+            <el-menu-item index="/solution/solutionAddEdit">增加编辑解决方案</el-menu-item>
           </el-sub-menu>
         </el-menu>
       </el-aside>
@@ -258,7 +292,7 @@ const handleLogout = () => {
     flex-direction: column;
 
     .content-breadcrumb {
-      margin-bottom: 25px;
+      margin-bottom: 10px;
       font-size: 16px;
       // user-select: none;
 
