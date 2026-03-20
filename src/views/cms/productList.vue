@@ -1,7 +1,7 @@
 <template>
   <div class="product-list-container">
     <!-- === 1. 顶部搜索与操作栏 === -->
-    <el-card class="search-card" shadow="hover">
+    <div class="search-card" shadow="hover">
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="产品名称">
           <el-input v-model="searchForm.productName" placeholder="请输入名称" clearable style="width: 200px"
@@ -15,24 +15,22 @@
 
         <el-form-item label="产品分类">
           <el-cascader v-model="searchForm.category" :options="categoryOptions" placeholder="请选择分类" clearable
-            style="width: 240px" :props="{ expandTrigger: 'hover' }" />
+            style="width: 200px" :props="{ expandTrigger: 'hover' }" />
         </el-form-item>
 
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
           <el-button :icon="Refresh" @click="handleReset">重置</el-button>
         </el-form-item>
+        <el-form-item>
+          <el-button type="success" :icon="Plus" @click="goToCreate">新增产品</el-button>
+        </el-form-item>
       </el-form>
-
-      <div class="action-bar">
-        <el-button type="success" :icon="Plus" @click="goToCreate">新增产品</el-button>
-        <div class="data-info">共找到 <span class="highlight">{{ rawTableData.length }}</span> 条数据</div>
-      </div>
-    </el-card>
+    </div>
 
     <!-- === 2. 数据表格 === -->
     <el-card class="table-card" shadow="never">
-      <el-table :data="paginatedData" style="width: 100%" v-loading="loading" border stripe
+      <el-table :data="paginatedData" height="50vh" style="width: 100%" v-loading="loading" border stripe
         header-cell-class-name="table-header-gray">
         <!-- 图片列 -->
         <el-table-column label="产品图片" width="120" align="center">
@@ -336,42 +334,50 @@ onMounted(() => {
 .product-list-container {
   padding: 20px;
   background-color: #f5f7fa;
-  min-height: 100vh;
+  // border: 1px solid red;
+  height: 100%;
+  box-sizing: border-box;
+
+
 
   .search-card {
     margin-bottom: 20px;
     border-radius: 8px;
+    min-height: 8vh;
+    box-sizing: border-box;
+    // border:1px solid green;
 
     .search-form {
-      margin-bottom: 10px;
-
-      :deep(.el-form-item__label) {
-        font-weight: 600;
-      }
-    }
-
-    .action-bar {
+      // border: 2px solid red;
+      min-height: 8vh;
       display: flex;
-      justify-content: space-between;
+      flex-direction: row;
+      justify-content: flex-start;
       align-items: center;
-      border-top: 1px solid #ebeef5;
-      padding-top: 15px;
+      flex-wrap: wrap;
 
-      .data-info {
-        color: #606266;
-        font-size: 14px;
+      box-sizing: border-box;
 
-        .highlight {
-          color: #409EFF;
-          font-weight: bold;
-          font-size: 16px;
-        }
+      .el-form-item {
+        // border:2px solid yellow;
+        margin-bottom: 0;
+        margin-right: 10px;
       }
     }
+
+
   }
 
   .table-card {
     border-radius: 8px;
+    // padding:20px;
+
+    :deep(.el-card__body) {
+
+      padding: 10px !important;
+
+      // border: 3px solid blue !important;
+    }
 
     .img-wrapper {
       display: flex;
@@ -418,7 +424,7 @@ onMounted(() => {
       display: flex;
       justify-content: flex-end;
       margin-top: 20px;
-      padding: 10px 0;
+      padding: 10px 10px;
     }
   }
 

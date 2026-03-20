@@ -1,4 +1,57 @@
+/*
+ * @Author: Sid Li
+ * @Date: 2026-03-16 15:03:38
+ * @LastEditors: Sid Li
+ * @LastEditTime: 2026-03-20 13:37:18
+ * @FilePath: \admin-demo\src\api\common.js
+ * @Description:
+ */
 import request from "@/utils/request.js";
+
+export function homeImage() {
+  return request({
+    url: "api/home/index_images",
+    method: "get",
+  });
+}
+
+export function deleteImage(image_id) {
+  return request({
+    url: `api/home/delete_image/${image_id}`,
+    method: "delete",
+  });
+}
+
+export function getServiceContent() {
+  return request({
+    url: "api/service/content",
+    method: "get",
+  });
+}
+
+export function putServiceContent(data) {
+  return request({
+    url: "api/service/content",
+    method: "put",
+    data,
+  });
+}
+
+export function fileListApi() {
+  return request({
+    url: "api/files/list",
+    method: "get",
+  });
+}
+
+export function deleteFile(file_id) {
+  return request({
+    url: `api/files/delete/${file_id}`,
+    method: "delete",
+  });
+}
+
+// ==========================================================================================
 
 export function hello() {
   return request({

@@ -37,11 +37,11 @@
       <!-- 左侧侧边栏 -->
       <el-aside class="admin-sidebar" :width="sidebarOpened ? '220px' : '70px'">
         <!-- 
-          关键修改 1: 添加 router 属性
+           添加 router 属性
           这样 el-menu-item 的 index 直接对应路由 path，点击自动跳转，无需 handleMenuSelect
         -->
         <!-- 
-          关键修改 2: :default-active="$route.path"
+           :default-active="$route.path"
           让菜单高亮状态始终跟随当前浏览器 URL，刷新页面也能保持高亮
         -->
         <el-menu :default-active="$route.path" class="admin-menu" :collapse="!sidebarOpened" background-color="#2e3b4e"
@@ -115,8 +115,7 @@
       <!-- 右侧内容区域 -->
       <el-main class="admin-content">
         <!-- 
-          关键修改 3: 动态面包屑
-          不再使用硬编码的 menuMap，而是直接从当前路由的 meta 信息中读取
+         动态面包屑当前路由的 meta 信息中读取
         -->
         <el-breadcrumb class="content-breadcrumb" separator="/">
           <el-breadcrumb-item v-for="(item, index) in currentBreadcrumb" :key="index" :to="getBreadcrumbPath(index)">
@@ -186,8 +185,7 @@ const handleLogout = () => {
   router.push('/login');
 };
 
-// 删除了原来的 handleMenuSelect，因为 el-menu 加了 router 属性后自动处理跳转
-// 删除了原来的 menuMap 和 currentComponent 变量
+
 </script>
 
 <style scoped lang="scss">
@@ -312,10 +310,14 @@ const handleLogout = () => {
       flex-direction: column;
       border-radius: 4px;
 
+      // border:3px solid blue;
+
+
       :deep(.el-card__body) {
         flex: 1;
-        padding: 20px;
+        padding: 0;
         overflow-y: auto;
+        // border:3px solid yellow;
       }
     }
   }

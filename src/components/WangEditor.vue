@@ -6,33 +6,46 @@
 
       <!-- 编辑区域 -->
       <Editor class="editor-box" :defaultConfig="editorConfig" :mode="mode" v-model="valueHtml"
-        @onCreated="handleCreated" @onChange="handleChange" @onDestroyed="handleDestroyed" @onFocus="handleFocus"
-        @onBlur="handleBlur" @customAlert="customAlert" @customPaste="customPaste" />
+        @onCreated="handleCreated" @onChange="handleChange" @onDestroyed="handleDestroyed" @customAlert="customAlert"
+        @customPaste="customPaste" />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, shallowRef, onBeforeUnmount } from "vue";
+// 【修正 1】补全必要的导入，特别是 watch, nextTick 和 axios
+import { ref, shallowRef, onBeforeUnmount, watch, nextTick } from "vue";
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
 import "@wangeditor/editor/dist/css/style.css";
-import axios from "axios"; // 【重要】确保已安装 axios: npm install axios
+import axios from "axios";
+
+
+const uploadUrl = "/api/common/upload_image";
 
 // --- Props & Emits ---
 const props = defineProps({
   modelValue: {
     type: String,
-    default: "<p></p>",
+    default: "<p><br></p>",
+  },
+
+  moduleType: {
+    type: String,
+    default: "",
   },
 });
+
+
 
 const emit = defineEmits(["update:modelValue"]);
 
 // --- 响应式数据 ---
 const editorRef = shallowRef();
+// 初始值设为空字符串或默认值，主要依赖 watch 来同步最新数据
 const valueHtml = ref(props.modelValue);
 const mode = ref("default");
 
+// --- 配置项 ---
 // --- 配置项 ---
 const toolbarConfig = {};
 
@@ -82,22 +95,18 @@ const editorConfig = {
 
     //   图片上传配置  
     uploadImage: {
-      //  如果后端返回格式完全符合 wangEditor 标准 (errno: 0, data: {url}),
-
-      // server: '/api/upload/image',
-      // fieldName: 'file',
-
 
       async customUpload(file, insertFn) {
         console.log("开始上传图片:", file.name);
 
         const formData = new FormData();
-        //  'file' 是后端接收文件的字段名，如果后端要求叫 'image' 或 'avatar'，请修改这里
+
         formData.append("file", file);
+         formData.append("module", props.moduleType);
 
         try {
           //  修改为 的真实上传接口地址
-          const res = await axios.post("/api/upload/image", formData, {
+          const res = await axios.post(uploadUrl, formData, {
             headers: {
               "Content-Type": "multipart/form-data",
               // 如果有 Token，取消下面注释并替换真实 token
@@ -107,7 +116,7 @@ const editorConfig = {
 
           // 【关键】解析后端返回的数据
           // 假设后端返回格式: { code: 200, data: { url: 'http://...' } }
-          // 请根据你实际的后端返回结构调整下面的 if 判断
+          // 请根据你 际的后端返回结构调整下面的 if 判断
 
           let imageUrl = "";
 
@@ -144,11 +153,19 @@ const editorConfig = {
   },
 };
 
-// --- 事件处理函数 ---
+// --- 事件处理 ---
 
 const handleCreated = (editor) => {
-  console.log("编辑器已创建", editor);
   editorRef.value = editor;
+  console.log("✅ 编辑器实例已创建");
+
+  // 如果此时 props 已经有值（极小概率），强制同步一次
+  if (props.modelValue && props.modelValue !== valueHtml.value) {
+    valueHtml.value = props.modelValue;
+    try {
+      editor.setHtml(props.modelValue);
+    } catch (e) { /* 忽略初始化时的潜在错误 */ }
+  }
 };
 
 const handleChange = (editor) => {
@@ -157,26 +174,62 @@ const handleChange = (editor) => {
   emit("update:modelValue", html);
 };
 
-const handleDestroyed = () => { };
-const handleFocus = () => { };
-const handleBlur = () => { };
+const handleDestroyed = () => {
+  editorRef.value = null;
+};
 
 const customAlert = (info, type) => {
-  // 生产环境建议替换为 Element Plus 的 ElMessage.info()
-  alert(`【系统提示】${type} - ${info}`);
+  console.log(`[Alert] ${type}: ${info}`);
 };
 
 const customPaste = (editor, event, callback) => {
-  // 允许默认粘贴行为
   callback(true);
 };
 
-// --- 生命周期 ---
+// --- 【核心修复】Watch 监听逻辑 ---
+// 监听父组件传来的 modelValue 变化，实现异步数据回显
+watch(
+  () => props.modelValue,
+  async (newVal) => {
+    if (!newVal) return;
 
+    // 1. 先更新本地响应式变量，触发 v-model 机制
+    valueHtml.value = newVal;
+    console.log("📡 监听到内容变化，准备同步到编辑器...");
+
+    // 2. 如果编辑器还没创建好，等待它创建（handleCreated 会处理后续）
+    if (!editorRef.value) {
+      console.log("⏳ 编辑器未就绪，等待初始化...");
+      return;
+    }
+
+    // 3. 等待 DOM 更新
+    await nextTick();
+
+    // 4. 尝试同步内容到编辑器实例
+    try {
+      const editor = editorRef.value;
+      const currentHtml = editor.getHtml();
+
+      // 只有当内容真的不一致时才调用 setHtml，避免不必要的重绘
+      if (newVal.trim() !== currentHtml.trim()) {
+        editor.setHtml(newVal);
+        console.log("✅ 内容已成功回显到编辑器");
+      }
+    } catch (error) {
+      // 捕获 Slate 相关的 DOM 解析错误，防止页面崩溃
+      console.warn("⚠️ 同步内容时发生非致命错误:", error);
+    }
+  },
+  { immediate: true } // 组件挂载时立即执行一次检查
+);
+
+// --- 生命周期 ---
 onBeforeUnmount(() => {
   const editor = editorRef.value;
-  if (editor == null) return;
-  editor.destroy();
+  if (editor) {
+    editor.destroy();
+  }
 });
 </script>
 

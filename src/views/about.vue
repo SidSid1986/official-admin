@@ -5,7 +5,6 @@
       <!-- === 左侧区域 === -->
       <div class="left-section">
         <div class="image-placeholder">
-          <!-- 如果有图片地址，显示图片；否则显示提示文字 -->
           <el-image v-if="imageUrl" :src="imageUrl" fit="cover" class="preview-image">
             <template #error>
               <div class="image-error">图片加载失败</div>
@@ -19,8 +18,7 @@
           </div>
         </div>
 
-        <!-- 上传图片组件 -->
-        <el-upload class="upload-demo" action="#" :auto-upload="false" :show-file-list="false"
+        <el-upload class="upload-demo" :action="uploadUrl" :auto-upload="false" :show-file-list="false"
           :on-change="handleImageUpload" :disabled="uploading" accept="image/*">
           <el-button type="primary" :loading="uploading" style="width: 100%; margin-top: 10px;">
             <el-icon style="margin-right: 5px">
@@ -38,8 +36,7 @@
       <!-- === 右侧区域 === -->
       <div class="right-section">
         <h3>关于我们 / 内容</h3>
-        <WangEditor v-model="aboutContent" />
-
+        <WangEditor v-model="aboutContent" moduleType="about" />
         <div class="action-bar">
           <el-button type="primary" @click="submitAbout" :loading="submitting">
             提交保存
@@ -52,110 +49,134 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { Picture, UploadFilled } from '@element-plus/icons-vue';
-import { ElMessage } from 'element-plus'; // 修正导入
+import { ElMessage } from 'element-plus';
 import WangEditor from '@/components/WangEditor.vue';
+import axios from 'axios';
+
+const uploadUrl = '/api/about/upload_image';
 
 // --- 数据状态 ---
 const aboutContent = ref('');
-const imageUrl = ref(''); // 存储后端返回的图片地址
-const uploading = ref(false); // 上传加载中
-const submitting = ref(false); // 提交加载中
+const imageUrl = ref('');
+const uploading = ref(false);
+const submitting = ref(false);
 
-// --- 方法：处理图片上传 ---
-const handleImageUpload = (uploadFile) => {
+// --- 1. 初始化：加载已有数据 ---
+const fetchAboutInfo = async () => {
+  try {
+    const res = await axios.get('/api/about/info'); // 根据你的实际前缀调整，如 /api/about/info
+    if (res.data.code === 200) {
+      const data = res.data.data;
+      if (data.cover_image) {
+        imageUrl.value = data.cover_image;
+      }
+      if (data.content) {
+        aboutContent.value = data.content;
+      }
+    }
+  } catch (error) {
+    console.error('加载失败', error);
+    // 静默失败即可，可能是第一次使用
+  }
+};
+
+// --- 2. 处理图片上传 ---
+const handleImageUpload = async (uploadFile) => {
   const file = uploadFile.raw;
-
   if (!file) return;
 
-  // 1. 基础校验
-  const isImage = file.type.startsWith('image/');
-  const isLt2M = file.size / 1024 / 1024 < 2; // 限制 2MB
-
-  if (!isImage) {
+  // 校验
+  if (!file.type.startsWith('image/')) {
     ElMessage.error('只能上传图片文件！');
     return;
   }
-  if (!isLt2M) {
+  if (file.size / 1024 / 1024 > 2) {
     ElMessage.error('图片大小不能超过 2MB！');
     return;
   }
 
-  // 2. 开始上传模拟
   uploading.value = true;
 
-  // --- 模拟后端上传请求 ---
-  // 实际项目中请替换为真实的 axios 请求
-  /*
-  const formData = new FormData();
-  formData.append('file', file);
-  
-  axios.post('/api/upload/image', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }).then(res => {
-    imageUrl.value = res.data.url; // 假设后端返回 { url: '...' }
-    ElMessage.success('上传成功');
-  }).catch(err => {
-    ElMessage.error('上传失败');
-  }).finally(() => {
-    uploading.value = false;
-  });
-  */
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    
 
-  // 模拟网络延迟 (2秒后返回一个假地址)
-  setTimeout(() => {
-    // 这里生成一个临时预览地址，实际应为后端返回的 CDN 地址
-    imageUrl.value = URL.createObjectURL(file);
-    // 或者模拟一个固定地址：imageUrl.value = 'https://placehold.co/600x400.png';
+    // 调用后端上传接口
+    const res = await axios.post('/api/about/upload_image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
 
-    ElMessage.success('图片上传成功，已获取地址');
+    if (res.data.code === 200) {
+      imageUrl.value = res.data.data.url; // 获取后端返回的 URL
+      ElMessage.success('图片上传成功');
+    } else {
+      ElMessage.error(res.data.msg || '上传失败');
+    }
+  } catch (error) {
+    console.error(error);
+    ElMessage.error('网络错误，上传失败');
+  } finally {
     uploading.value = false;
-    console.log('模拟后端返回的图片地址:', imageUrl.value);
-  }, 1500);
+  }
 };
 
-// --- 方法：提交表单 ---
-const submitAbout = () => {
-  // 1. 校验
-  if (!aboutContent.value || aboutContent.value.trim() === '<p><br></p>') {
-    ElMessage.warning('请输入服务内容');
+// --- 3. 提交保存 ---
+const submitAbout = async () => {
+  // 校验
+  if (!imageUrl.value) {
+    ElMessage.warning('请先上传封面图片');
     return;
   }
-  if (!imageUrl.value) {
-    ElMessage.warning('请先上传左侧展示图片');
+  // 简单的富文本空值校验 (根据 WangEditor 的实际空值表现调整)
+  if (!aboutContent.value || aboutContent.value.trim() === '' || aboutContent.value === '<p><br></p>') {
+    ElMessage.warning('请输入内容');
     return;
   }
 
   submitting.value = true;
 
-  // 2. 构造提交数据
-  const payload = {
-    content: aboutContent.value,
-    image: imageUrl.value
-  };
+  try {
+    // 构造 JSON 数据
+    const payload = {
+      cover_image: imageUrl.value, // 注意字段名要和后端 Pydantic 模型一致
+      content: aboutContent.value
+    };
 
-  console.log('=== 准备提交的数据 ===');
-  console.log(payload);
+    // 调用后端保存接口
+    const res = await axios.post('/api/about/save', payload, {
+      headers: { 'Content-Type': 'application/json' }
+    });
 
-  // 3. 模拟提交请求
-  setTimeout(() => {
-    ElMessage.success('保存成功！');
+    if (res.data.code === 200) {
+      ElMessage.success('保存成功！');
+    } else {
+      ElMessage.error(res.data.msg || '保存失败');
+    }
+  } catch (error) {
+    console.error(error);
+    ElMessage.error('网络错误，保存失败');
+  } finally {
     submitting.value = false;
-
-    // 实际 axios 代码示例:
-    // axios.post('/api/about', payload).then(...).catch(...).finally(...)
-  }, 1000);
+  }
 };
+
+// 生命周期：挂载时加载数据
+onMounted(() => {
+  fetchAboutInfo();
+});
 </script>
 
+<!-- style 部分保持不变 -->
 <style scoped lang="scss">
+/* ... 你的原有样式 ... */
 .about-container {
   padding: 20px;
   background-color: #f5f7fa;
   height: 100%;
   width: 100%;
-  // border: 2px solid red;
 
   .about-content {
     display: flex;
@@ -167,7 +188,6 @@ const submitAbout = () => {
     max-width: 1200px;
     margin: 0 auto;
 
-    // 左侧样式
     .left-section {
       width: 300px;
       flex-shrink: 0;
@@ -224,7 +244,6 @@ const submitAbout = () => {
       }
     }
 
-    // 右侧样式
     .right-section {
       flex: 1;
       display: flex;

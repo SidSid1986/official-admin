@@ -1,3 +1,11 @@
+/*
+ * @Author: Sid Li
+ * @Date: 2026-03-16 15:07:07
+ * @LastEditors: Sid Li
+ * @LastEditTime: 2026-03-19 14:44:25
+ * @FilePath: \admin-demo\vite.config.js
+ * @Description:
+ */
 import { defineConfig, loadEnv } from "vite";
 import vue from "@vitejs/plugin-vue";
 import viteImagemin from "vite-plugin-imagemin";
@@ -80,7 +88,11 @@ export default ({ mode }) => {
         "/api": {
           target: env.VITE_APP_API_HOST,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, "api"),
+          rewrite: (path) => path.replace(/^\/api/, ""),
+        },
+        "/static": {
+          target: env.VITE_APP_API_HOST,
+          changeOrigin: true,
         },
       },
     },
