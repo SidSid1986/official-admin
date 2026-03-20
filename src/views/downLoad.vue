@@ -6,43 +6,32 @@
     <div class="download-content">
 
       <!-- 1. 文件上传组件 -->
-      <!-- 
-        action: 后端上传接口地址 
-        :headers: 如果有 Token 认证，在这里添加
-        :on-success: 上传成功回调
-        :before-upload: 上传前校验
-      -->
       <el-upload class="upload-demo" :action="uploadUrl" :headers="uploadHeaders" :auto-upload="true"
-        :file-list="fileList" :on-success="handleUploadSuccess" :on-error="handleUploadError"
+        :show-file-list="false" :file-list="fileList" :on-success="handleUploadSuccess" :on-error="handleUploadError"
         :before-upload="beforeUpload" list-type="text">
         <el-button type="primary">
           <el-icon>
             <UploadFilled />
           </el-icon> 点击上传文件
         </el-button>
-        <template #tip>
-          <div class="el-upload__tip">
-            请上传不超过 5MB 的文件，支持格式：doc, docx, pdf, zip, rar
-          </div>
-        </template>
       </el-upload>
 
       <!-- 2. 文件列表展示 -->
-      <div class="file-list-container" v-if="fileList.length > 0">
+      <div class="file-list-container" v-if="total > 0 || loading">
         <div class="file-list-title">已上传文件列表</div>
+
         <el-table :data="fileList" border style="width: 100%; margin-top: 10px" v-loading="loading">
 
-          <!-- 文件名列 (带下载链接) -->
+          <!-- 文件名列 -->
           <el-table-column prop="name" label="文件名" min-width="300">
             <template #default="scope">
               <div style="display: flex; align-items: center;">
                 <el-icon class="file-icon">
                   <Document />
                 </el-icon>
-                <!-- 点击文件名可下载/预览 -->
-                <a :href="scope.row.url" target="_blank" class="file-name-link">
+                <span @click="handleDownload(scope.row)" class="file-name-link" style="cursor: pointer;" title="点击下载">
                   {{ scope.row.name }}
-                </a>
+                </span>
               </div>
             </template>
           </el-table-column>
@@ -54,7 +43,7 @@
             </template>
           </el-table-column>
 
-          <!-- 上传时间列 (可选) -->
+          <!-- 上传时间列 -->
           <el-table-column prop="upload_time" label="上传时间" width="180">
             <template #default="scope">
               {{ formatDate(scope.row.upload_time) }}
@@ -62,14 +51,27 @@
           </el-table-column>
 
           <!-- 操作列 -->
-          <el-table-column label="操作" width="120" fixed="right">
+          <el-table-column label="操作" width="200" fixed="right">
             <template #default="scope">
-              <el-button type="danger" size="small" :loading="scope.row.deleting" @click="handleDelete(scope.row)">
-                删除
-              </el-button>
+              <div style="display: flex; gap: 5px;">
+                <el-button type="primary" size="small" :loading="scope.row.downloading"
+                  @click="handleDownload(scope.row)">
+                  下载
+                </el-button>
+                <el-button type="danger" size="small" :loading="scope.row.deleting" @click="handleDelete(scope.row)">
+                  删除
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
+
+        <!-- 3. 分页组件 -->
+        <div class="pagination-container">
+          <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]"
+            layout="total, sizes, prev, pager, next, jumper" :total="total" @size-change="handleSizeChange"
+            @current-change="handleCurrentChange" />
+        </div>
       </div>
 
       <!-- 空状态提示 -->
@@ -81,136 +83,158 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
-import { Document, UploadFilled } from '@element-plus/icons-vue';
+import { Document, UploadFilled, Download } from '@element-plus/icons-vue';
 import axios from 'axios';
 import { fileListApi, deleteFile } from '@/api/common.js';
 
-
 const uploadUrl = `api/files/upload`;
-// 如果有 Token，可以在这里配置
-const uploadHeaders = {
-  // 'Authorization': 'Bearer ' + token 
-};
+const uploadHeaders = {};
 
 // --- 数据状态 ---
 const fileList = ref([]);
 const loading = ref(false);
 
-
+// --- 分页状态 ---
+const currentPage = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
 
 // --- 方法：获取文件列表 ---
-const fetchFileList = async () => {
+const fetchFileList = async (currentPage, pageSize) => {
   loading.value = true;
-  try {
 
-    const res = await fileListApi();
+  const res = await fileListApi(
+    currentPage,
+    pageSize
+  );
 
-    console.log(res);
+  if (res.code === 200) {
+    // 更新总数
+    total.value = res.total;
 
-    if (res.code === 200) {
-
-      // 后端: original_name, file_path, file_size, id, upload_time
-      // 前端 el-upload 需要: name, url, size, uid
-      fileList.value = res.data.map(item => ({
-        uid: item.id, // 用数据库 ID 作为 uid，方便删除时定位
-        name: item.original_name,
-        url: item.file_path, // 用于下载/预览
-        size: item.file_size,
-        upload_time: item.upload_time,
-        deleting: false // 自定义状态标记
-      }));
-    } else {
-      ElMessage.error(res.data.msg || '加载失败');
-    }
-  } catch (error) {
-    console.error(error);
-    ElMessage.error('网络错误，无法加载文件列表');
-  } finally {
+    // 数据映射
+    fileList.value = res.data.map(item => ({
+      uid: item.id,
+      name: item.original_name,
+      url: item.file_path,
+      size: item.file_size,
+      upload_time: item.upload_time,
+      deleting: false,
+      downloading: false
+    }));
     loading.value = false;
+  } else {
+    ElMessage.error(res.msg || '加载失败');
   }
+}
+
+
+// --- 分页事件处理 ---
+const handleSizeChange = (val) => {
+  pageSize.value = val;
+  currentPage.value = 1; // 改变每页数量时，重置到第一页
+  fetchFileList(currentPage.value, pageSize.value);
 };
 
-// --- 方法：上传前校验 ---
-const beforeUpload = (file) => {
-  const maxSize = 5 * 1024 * 1024; // 5MB
-  const allowedTypes = [
-    'application/msword', // .doc
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-    'application/pdf', // .pdf
-    'application/zip', // .zip
-    'application/x-rar-compressed', // .rar
-    'application/x-zip-compressed'
-  ];
+const handleCurrentChange = (val) => {
+  currentPage.value = val;
+  fetchFileList(currentPage.value, pageSize.value);
+};
 
-  // 简单的后缀名校验 (因为 MIME type 有时不准)
-  const extension = file.name.split('.').pop().toLowerCase();
+// --- 上传前校验 ---
+const beforeUpload = (file) => {
+  const maxSize = 5 * 1024 * 1024;
   const allowedExts = ['doc', 'docx', 'pdf', 'zip', 'rar'];
+  const extension = file.name.split('.').pop().toLowerCase();
 
   if (!allowedExts.includes(extension)) {
     ElMessage.error(`不支持的文件格式：.${extension}`);
     return false;
   }
-
   if (file.size > maxSize) {
     ElMessage.error('文件大小不能超过 5MB');
     return false;
   }
-
   return true;
 };
 
-// --- 方法：上传成功回调 ---
+// --- 上传成功回调 ---
 const handleUploadSuccess = (response, file, uploadFiles) => {
   if (response.code === 200) {
     ElMessage.success('上传成功');
-    // 重新加载列表以确保数据最新（包含后端生成的 ID 等）
-    fetchFileList();
+    // 上传新文件后，通常希望看到最新的，所以重置到第一页
+    currentPage.value = 1;
+    fetchFileList(currentPage.value, pageSize.value);
   } else {
     ElMessage.error(response.msg || '上传失败');
-    // 如果失败，从列表中移除该临时文件
-    const index = fileList.value.findIndex(item => item.uid === file.uid);
-    if (index !== -1) {
-      fileList.value.splice(index, 1);
+  }
+};
+
+const handleUploadError = () => {
+  ElMessage.error('上传失败，请检查网络或服务器状态');
+};
+
+// --- 删除文件 ---
+const handleDelete = async (fileItem) => {
+  try {
+    await ElMessageBox.confirm(`确定要删除文件 "${fileItem.name}" 吗？`, '删除确认', { type: 'warning' });
+  } catch {
+    return;
+  }
+
+  fileItem.deleting = true;
+  try {
+    const res = await deleteFile(fileItem.uid);
+    if (res.code === 200) {
+      ElMessage.success('删除成功');
+
+      // 逻辑优化：如果删除后当前页没有数据了，且不是第一页，则自动跳转到上一页
+      if (fileList.value.length === 1 && currentPage.value > 1) {
+        currentPage.value -= 1;
+        fetchFileList(currentPage.value, pageSize.value);
+      } else {
+        // 否则只刷新当前页（或者重新拉取列表，这里简单起见重新拉取）
+        // 注意：直接 filter 本地列表会导致 total 不准，所以最好重新请求
+        fetchFileList(currentPage.value, pageSize.value);
+      }
+    } else {
+      ElMessage.error(res.msg || '删除失败');
+    }
+  } catch (error) {
+    if (error.response?.status !== 404) {
+      ElMessage.error('网络错误，删除失败');
     }
   }
 };
 
-// --- 方法：上传失败回调 ---
-const handleUploadError = (error, file, uploadFiles) => {
-  console.error(error);
-  ElMessage.error('上传失败，请检查网络或服务器状态');
+// --- 下载文件 ---
+const handleDownload = async (fileItem) => {
+  if (fileItem.downloading) return;
+
+  fileItem.downloading = true;
+  const loadingMsg = ElMessage({ message: '正在准备下载...', type: 'info', duration: 0 });
+
+  try {
+    const response = await axios.get(fileItem.url, { responseType: 'blob' });
+    const blob = new Blob([response.data]);
+    const link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = fileItem.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(link.href);
+
+    ElMessage.success(`开始下载：${fileItem.name}`);
+  } catch (error) {
+    ElMessage.error('下载失败');
+  } finally {
+    fileItem.downloading = false;
+    loadingMsg.close();
+  }
 };
 
-// --- 方法：删除文件 ---
-const handleDelete = async (fileItem) => {
-  try {
-    await ElMessageBox.confirm(
-      `确定要删除文件 "${fileItem.name}" 吗？此操作不可恢复。`,
-      '删除确认',
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
-    );
-  } catch {
-    return; // 用户取消
-  }
-
-  // 设置该行正在删除状态
-  fileItem.deleting = true;
-
-
-  const res = await deleteFile(fileItem.uid);
-  console.log(res);
-
-  if (res.code === 200) {
-    ElMessage.success('删除成功');
-    // 从本地列表移除
-    fileList.value = fileList.value.filter(item => item.uid !== fileItem.uid);
-  } else {
-    ElMessage.error(res.data.msg || '删除失败');
-  }
-}
-
-
-// --- 工具函数：格式化文件大小 ---
+// --- 工具函数 ---
 const formatFileSize = (bytes) => {
   if (!bytes) return '0 B';
   const k = 1024;
@@ -219,16 +243,13 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-// --- 工具函数：格式化日期 ---
 const formatDate = (dateString) => {
   if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleString('zh-CN', { hour12: false });
+  return new Date(dateString).toLocaleString('zh-CN', { hour12: false });
 };
 
-// --- 生命周期：加载列表 ---
 onMounted(() => {
-  fetchFileList();
+  fetchFileList(currentPage.value, pageSize.value);
 });
 </script>
 
@@ -261,6 +282,13 @@ onMounted(() => {
   font-weight: 600;
   margin-bottom: 10px;
   color: #606266;
+}
+
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  /* 分页靠右 */
 }
 
 .file-icon {

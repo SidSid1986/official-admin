@@ -13,14 +13,11 @@
 </template>
 
 <script setup>
-// 【修正 1】补全必要的导入，特别是 watch, nextTick 和 axios
+
 import { ref, shallowRef, onBeforeUnmount, watch, nextTick } from "vue";
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
 import "@wangeditor/editor/dist/css/style.css";
-import axios from "axios";
-
-
-const uploadUrl = "/api/common/upload_image";
+import { uploadImageCommon } from "@/api/common.js";
 
 // --- Props & Emits ---
 const props = defineProps({
@@ -102,52 +99,27 @@ const editorConfig = {
         const formData = new FormData();
 
         formData.append("file", file);
-         formData.append("module", props.moduleType);
+        formData.append("module", props.moduleType);
 
-        try {
-          //  修改为 的真实上传接口地址
-          const res = await axios.post(uploadUrl, formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              // 如果有 Token，取消下面注释并替换真实 token
-              // 'Authorization': 'Bearer ' + 'YOUR_TOKEN_HERE'
-            },
-          });
 
-          // 【关键】解析后端返回的数据
-          // 假设后端返回格式: { code: 200, data: { url: 'http://...' } }
-          // 请根据你 际的后端返回结构调整下面的 if 判断
+        const res = await uploadImageCommon(formData);
+        //  后端返回格式: { code: 200, data: { url: 'http://...' } }
+        let imageUrl = "";
 
-          let imageUrl = "";
-
-          // 情况 A: 标准嵌套结构 (常见)
-          if (res.data.code === 200 && res.data.data && res.data.data.url) {
-            imageUrl = res.data.data.url;
-          }
-          // 情况 B: 直接返回 url 字符串 (较少见)
-          else if (typeof res.data === "string" && res.data.startsWith("http")) {
-            imageUrl = res.data;
-          }
-          // 情况 C: 其他成功标识 (如 status: 'success')
-          else if (res.data.status === "success" && res.data.url) {
-            imageUrl = res.data.url;
-          } else {
-            // 如果解析失败，抛出错误进入 catch
-            throw new Error("无法从响应中解析图片 URL");
-          }
-
-          // 【核心】调用 insertFn 将图片插入编辑器
-          // 参数顺序：(src, alt, href)
-          // src: 图片地址
-          // alt: 图片描述 (通常用文件名)
-          // href: 点击跳转链接 (通常设为和图片地址一样，或者空字符串)
-          insertFn(imageUrl, file.name, imageUrl);
-
-          console.log("图片上传并插入成功:", imageUrl);
-        } catch (error) {
-          console.error("图片上传失败:", error);
-          alert("图片上传失败，请稍后重试");
+        if (res.code === 200 && res.data && res.data.url) {
+          imageUrl = res.data.url;
         }
+
+
+        // 【核心】调用 insertFn 将图片插入编辑器
+        // 参数顺序：(src, alt, href)
+        // src: 图片地址
+        // alt: 图片描述 (通常用文件名)
+        // href: 点击跳转链接 (通常设为和图片地址一样，或者空字符串)
+        insertFn(imageUrl, file.name, imageUrl);
+
+        console.log("图片上传并插入成功:", imageUrl);
+
       },
     },
   },

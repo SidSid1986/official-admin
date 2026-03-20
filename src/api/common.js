@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-16 15:03:38
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-03-20 13:37:18
+ * @LastEditTime: 2026-03-20 16:10:20
  * @FilePath: \admin-demo\src\api\common.js
  * @Description:
  */
@@ -37,9 +37,9 @@ export function putServiceContent(data) {
   });
 }
 
-export function fileListApi() {
+export function fileListApi(page, pageSize) {
   return request({
-    url: "api/files/list",
+    url: `api/files/list?page=${page}&page_size=${pageSize}`,
     method: "get",
   });
 }
@@ -48,6 +48,51 @@ export function deleteFile(file_id) {
   return request({
     url: `api/files/delete/${file_id}`,
     method: "delete",
+  });
+}
+
+//news
+export function saveNews(data) {
+  return request({
+    url: "api/news/save",
+    method: "post",
+    data,
+  });
+}
+
+//news list
+export function newsListApi(page, pageSize) {
+  return request({
+    url: `api/news/list?page=${page}&page_size=${pageSize}`,
+    method: "get",
+  });
+}
+
+//news detail
+export function newsDetailApi(id) {
+  return request({
+    url: `api/news/${id}`,
+    method: "get",
+  });
+}
+
+//news delete
+export function deleteNews(id) {
+  return request({
+    url: `api/news/delete/${id}`,
+    method: "delete",
+  });
+}
+
+//通用上传图片
+export function uploadImageCommon(data) {
+  return request({
+    url: "api/common/upload_image",
+    method: "post",
+    data,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
   });
 }
 
