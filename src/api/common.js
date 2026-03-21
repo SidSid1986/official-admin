@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-16 15:03:38
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-03-20 16:10:20
+ * @LastEditTime: 2026-03-21 15:07:10
  * @FilePath: \admin-demo\src\api\common.js
  * @Description:
  */
@@ -81,6 +81,64 @@ export function deleteNews(id) {
   return request({
     url: `api/news/delete/${id}`,
     method: "delete",
+  });
+}
+
+//解决方案中行业列表
+export function industryListApi() {
+  return request({
+    url: "api/industries/list",
+    method: "get",
+  });
+}
+
+//增加修改行业
+export function addOrUpdateIndustry(data) {
+  return request({
+    url: "api/industries/save",
+    method: "post",
+    data,
+  });
+}
+
+//删除行业
+export function deleteIndustry(industry_id) {
+  return request({
+    url: `api/industries/delete/${industry_id}`,
+    method: "delete",
+  });
+}
+
+//增加修改方案
+export function addOrUpdateSolution(data) {
+  return request({
+    url: "api/solution/save",
+    method: "post",
+    data,
+  });
+}
+
+//方案列表
+export function solutionListApi() {
+  return request({
+    url: `api/solution/list`,
+    method: "get",
+  });
+}
+
+//删除方案
+export function deleteSolution(solution_id) {
+  return request({
+    url: `api/solution/delete/${solution_id}`,
+    method: "delete",
+  });
+}
+
+//方案详情
+export function solutionDetailApi(solution_id) {
+  return request({
+    url: `api/solution/detail/${solution_id}`,
+    method: "get",
   });
 }
 

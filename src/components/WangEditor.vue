@@ -43,8 +43,9 @@ const valueHtml = ref(props.modelValue);
 const mode = ref("default");
 
 // --- 配置项 ---
-// --- 配置项 ---
-const toolbarConfig = {};
+const toolbarConfig = {
+  excludeKeys: ["fullScreen"],
+};
 
 const editorConfig = {
   placeholder: "请输入内容...",

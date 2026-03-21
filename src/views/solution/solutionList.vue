@@ -36,7 +36,7 @@
         <el-table-column label="方案名称" min-width="250">
           <template #default="scope">
             <span class="edit-link" @click="handleEdit(scope.row)" title="点击编辑">
-              {{ scope.row.name }}
+              {{ scope.row.title }}
             </span>
           </template>
         </el-table-column>
@@ -45,7 +45,7 @@
         <el-table-column label="所属行业" width="150" align="center">
           <template #default="scope">
             <el-tag type="info" effect="plain">
-              {{ getIndustryName(scope.row.fid) }}
+              {{ getIndustryName(scope.row) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -53,7 +53,7 @@
         <!-- 创建/更新时间 (模拟) -->
         <el-table-column label="更新时间" width="180" sortable>
           <template #default="scope">
-            {{ scope.row.updateTime || '刚刚' }}
+            {{ scope.row.update_time || '刚刚' }}
           </template>
         </el-table-column>
 
@@ -87,133 +87,141 @@ import { useRouter } from 'vue-router';
 import { Search, Refresh, Plus, Edit, Delete } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
+// 引入真实的 API 方法
+import { solutionListApi, deleteSolution } from '@/api/common';
+
 const router = useRouter();
 
-// --- 1. 原始数据 (模拟后端) ---
-const industryOptions = [
-  { id: 1, name: "汽车行业" },
-  { id: 2, name: "电子行业" },
-  { id: 3, name: "锂电行业" },
-  { id: 4, name: "光伏行业" },
-  { id: 5, name: "金属加工" },
-  { id: 6, name: "建材加工" },
-  { id: 7, name: "包装物流" },
-  { id: 8, name: "一般工业" },
-  { id: 9, name: "钢铁行业" },
-  { id: 10, name: "家电行业" },
-  { id: 11, name: "食品烟酒" },
-];
-
-const rawSolutions = ref([]);
-
-// 初始化数据：包含你提供的数据 + 自动补充的其他行业数据
-const initData = () => {
-  const baseData = [
-    { id: 11, name: "折弯解决方案", fid: 1, updateTime: '2026-03-10' },
-    { id: 22, name: "张力控制解决方案", fid: 1, updateTime: '2026-03-12' },
-    { id: 33, name: "压铸解决方案", fid: 1, updateTime: '2026-03-05' },
-    { id: 44, name: "码垛解决方案", fid: 1, updateTime: '2026-03-15' },
-    { id: 55, name: "焊接解决方案", fid: 1, updateTime: '2026-03-01' },
-    { id: 66, name: "打磨解决方案", fid: 1, updateTime: '2026-03-18' },
-  ];
-
-  // 补充其他行业的数据，让列表看起来更丰富
-  const extraData = [];
-  let idCounter = 100;
-
-  industryOptions.forEach(ind => {
-    if (ind.id !== 1) { // 跳过汽车行业，因为上面已经有了
-      extraData.push({
-        id: idCounter++,
-        name: `${ind.name}智能产线方案`,
-        fid: ind.id,
-        updateTime: '2026-02-20'
-      });
-      extraData.push({
-        id: idCounter++,
-        name: `${ind.name}自动化升级方案`,
-        fid: ind.id,
-        updateTime: '2026-02-25'
-      });
-    }
-  });
-
-  rawSolutions.value = [...baseData, ...extraData];
-};
-
-// --- 2. 搜索与过滤 ---
-const searchForm = reactive({
-  name: '',
-  industryId: null
-});
-
-const filteredData = computed(() => {
-  return rawSolutions.value.filter(item => {
-    const matchName = !searchForm.name || item.name.includes(searchForm.name);
-    const matchIndustry = !searchForm.industryId || item.fid === searchForm.industryId;
-    return matchName && matchIndustry;
-  });
-});
-
-// --- 3. 分页 ---
-const currentPage = ref(1);
-const pageSize = ref(10);
+// ---  数据状态 ---
+const tableData = ref([]);
+const industryOptions = ref([]); // 存储行业下拉选项 
 const loading = ref(false);
 
+// ---  搜索表单 ---
+const searchForm = reactive({
+  title: '',       // 后端的 title 字段
+  fid: null        // 后端的 fid (行业ID)
+});
+
+// --- 3. 分页配置 ---
+const currentPage = ref(1);
+const pageSize = ref(10);
+const total = ref(0);
+
+// --- 4. 核心方法：获取列表 ---
+const fetchList = async () => {
+  loading.value = true;
+  try {
+
+    const params = {
+      fid: searchForm.fid || undefined, // 不传则查全部
+      only_active: false // 是否只查启用的，根据需求调整
+    };
+
+    const res = await solutionListApi(params);
+
+    if (res.code === 200) {
+      tableData.value = res.data || [];
+      total.value = tableData.value.length;
+    } else {
+      ElMessage.error(res.msg || '获取列表失败');
+    }
+  } catch (error) {
+    console.error(error);
+    ElMessage.error('网络异常，获取列表失败');
+  } finally {
+    loading.value = false;
+  }
+};
+
+// ---  后端不支持 title 模糊搜索  ---
+const filteredData = computed(() => {
+  return tableData.value.filter(item => {
+    // 匹配标题 (后端字段是 title)
+    const matchTitle = !searchForm.title || item.title.includes(searchForm.title);
+    // 匹配行业 ID
+    const matchIndustry = !searchForm.fid || item.fid === searchForm.fid;
+    return matchTitle && matchIndustry;
+  });
+});
+
+// --- 6. 分页计算 ---
 const paginatedData = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
   const end = start + pageSize.value;
   return filteredData.value.slice(start, end);
 });
 
-const handleSizeChange = (val) => { pageSize.value = val; currentPage.value = 1; };
-const handleCurrentChange = (val) => { currentPage.value = val; };
-
-// --- 4. 操作方法 ---
-const handleSearch = () => {
+const handleSizeChange = (val) => {
+  pageSize.value = val;
   currentPage.value = 1;
-  loading.value = true;
-  setTimeout(() => loading.value = false, 300);
+};
+
+const handleCurrentChange = (val) => {
+  currentPage.value = val;
+};
+
+// --- 7. 操作事件 ---
+const handleSearch = () => {
+  currentPage.value = 1; // 重置到第一页
+  fetchList(); // 重新请求或过滤
 };
 
 const handleReset = () => {
-  searchForm.name = '';
-  searchForm.industryId = null;
+  searchForm.title = '';
+  searchForm.fid = null;
   handleSearch();
 };
 
-const getIndustryName = (fid) => {
-  const ind = industryOptions.find(i => i.id === fid);
-  return ind ? ind.name : '未知行业';
+
+const getIndustryName = (row) => {
+  console.log(row);
+  if (row.industry_name) return row.industry_name;
+  return `行业ID:${row.fid}`;
 };
 
 const goToCreate = () => {
-  router.push('/solution/solutionAddEdit'); // 对应路由 path
+  // 跳转新增页 (不带 ID)
+  router.push('/solution/solutionAddEdit');
 };
 
 const handleEdit = (row) => {
-  // 跳转编辑页，带上 ID
+  // 跳转编辑页 (带 ID)
   router.push(`/solution/solutionAddEdit/${row.id}`);
 };
 
 const handleDelete = (row) => {
-  ElMessageBox.confirm(`确定删除方案 "${row.name}" 吗？`, '警告', {
+  ElMessageBox.confirm(`确定删除方案 "${row.title}" 吗？\n注意：此操作不可恢复！`, '警告', {
     confirmButtonText: '删除',
     cancelButtonText: '取消',
     type: 'warning',
-  }).then(() => {
+  }).then(async () => {
     loading.value = true;
-    setTimeout(() => {
-      rawSolutions.value = rawSolutions.value.filter(item => item.id !== row.id);
-      ElMessage.success('删除成功');
+    try {
+      const res = await deleteSolution(row.id);
+      if (res.code === 200) {
+        ElMessage.success('删除成功');
+
+        await fetchList();
+
+        //  如果当前页数据空了且不是第一页，跳回前一页
+        if (paginatedData.value.length === 0 && currentPage.value > 1) {
+          currentPage.value--;
+        }
+      } else {
+        ElMessage.error(res.msg || '删除失败');
+      }
+    } catch (error) {
+      ElMessage.error('删除操作异常');
+    } finally {
       loading.value = false;
-      if (paginatedData.value.length === 0 && currentPage.value > 1) currentPage.value--;
-    }, 500);
+    }
   });
 };
 
+
 onMounted(() => {
-  initData();
+  fetchList();
 });
 </script>
 
@@ -221,13 +229,13 @@ onMounted(() => {
 .solution-container {
   padding: 20px;
   background-color: #f5f7fa;
-  height:100%;
+  height: 100%;
 
   .search-card {
     margin-bottom: 20px;
     border-radius: 8px;
     // border:1px solid red;
-    padding:10px;
+    padding: 10px;
 
     .action-bar {
       display: flex;
@@ -267,7 +275,7 @@ onMounted(() => {
       justify-content: flex-end;
       margin-top: 20px;
       // border:1px solid red;
-      padding:10px;
+      padding: 10px;
     }
   }
 

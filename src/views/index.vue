@@ -114,12 +114,11 @@
 
       <!-- 右侧内容区域 -->
       <el-main class="admin-content">
-        <!-- 
-         动态面包屑当前路由的 meta 信息中读取
-        -->
+
         <el-breadcrumb class="content-breadcrumb" separator="/">
           <el-breadcrumb-item v-for="(item, index) in currentBreadcrumb" :key="index" :to="getBreadcrumbPath(index)">
-            {{ item }}
+            <!-- 直接读取 item.title -->
+            {{ item.title }}
           </el-breadcrumb-item>
         </el-breadcrumb>
 
@@ -139,13 +138,13 @@
   </div>
 </template>
 
+
+
 <script setup>
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ElMessage } from 'element-plus';
-import { Fold, Expand, User, Monitor, Document } from '@element-plus/icons-vue';
 
-// 使用 useRoute 获取当前路由信息
+
 const route = useRoute();
 const router = useRouter();
 const sidebarOpened = ref(true);
@@ -156,36 +155,39 @@ const toggleSidebar = () => {
 };
 
 // 计算当前面包屑列表
-// 逻辑：优先读取路由配置中 meta.breadcrumb 数组，如果没有则 fallback 到 meta.title
+
 const currentBreadcrumb = computed(() => {
   if (route.meta && Array.isArray(route.meta.breadcrumb)) {
     return route.meta.breadcrumb;
   }
-  // 兜底：如果没配面包屑，就显示当前页面标题
-  return [route.meta.title || '当前页面'];
+
+  return route.meta.title
+    ? [{ title: route.meta.title }]
+    : [{ title: '当前页面' }];
 });
 
-// 获取面包屑项的跳转路径
-// 逻辑：除了最后一项（当前页），其他项都可以点击跳转
+
 const getBreadcrumbPath = (index) => {
+  const item = currentBreadcrumb.value[index];
   const isLast = index === currentBreadcrumb.value.length - 1;
-  if (isLast) return ''; // 最后一项不可点击
 
-  const label = currentBreadcrumb.value[index];
-  if (label === '首页') return '/home';
+  // 如果是最后一项，通常不允许点击 
+  if (isLast) return '';
 
-  // 如果有更多层级，可以在这里扩展逻辑，或者直接在 meta.breadcrumb 中存对象 { label, path }
+  // 如果配置了 path，则返回 path
+  if (item && item.path) {
+    return item.path;
+  }
+
   return '';
 };
 
 // 退出登录
 const handleLogout = () => {
   localStorage.clear();
-  ElMessage.success('退出登录成功');
+
   router.push('/login');
 };
-
-
 </script>
 
 <style scoped lang="scss">
