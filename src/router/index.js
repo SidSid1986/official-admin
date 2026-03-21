@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-16 15:03:38
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-03-21 10:20:06
+ * @LastEditTime: 2026-03-21 16:36:39
  * @FilePath: \admin-demo\src\router\index.js
  * @Description:
  */
@@ -76,6 +76,18 @@ const routes = [
           breadcrumb: [
             { title: "产品管理", path: "/cms/productList" },
             { title: "增加编辑产品" },
+          ],
+        },
+      },
+      {
+        path: "cms/productCategory",
+        name: "ProductCategory",
+        component: () => import("@/views/cms/productCategory.vue"),
+        meta: {
+          title: "产品分类",
+          breadcrumb: [
+            { title: "产品管理", path: "/cms/productList" },
+            { title: "产品分类" },
           ],
         },
       },

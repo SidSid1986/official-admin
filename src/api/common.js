@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-16 15:03:38
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-03-21 15:07:10
+ * @LastEditTime: 2026-03-21 15:58:00
  * @FilePath: \admin-demo\src\api\common.js
  * @Description:
  */
@@ -119,13 +119,13 @@ export function addOrUpdateSolution(data) {
 }
 
 //方案列表
-export function solutionListApi() {
+export function solutionListApi(params) {
   return request({
-    url: `api/solution/list`,
+    url: "/api/solution/list",
     method: "get",
+    params: params,
   });
 }
-
 //删除方案
 export function deleteSolution(solution_id) {
   return request({

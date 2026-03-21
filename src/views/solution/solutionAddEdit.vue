@@ -15,7 +15,6 @@
 
         <div class="industry-list">
           <el-empty v-if="industryOptions.length === 0" description="暂无行业数据" :image-size="80" />
-
           <div v-else class="list-container">
             <div v-for="(item, index) in industryOptions" :key="item.id" class="industry-item"
               :class="{ 'is-active': formData.fid === item.id }">
@@ -64,7 +63,7 @@
 
           <!-- 方案名称 & 封面图入口 -->
           <el-form-item label="方案名称" prop="name">
-            <div style="display: flex; align-items: center; width:800px">
+            <div style="display: flex; align-items: center; width:70%">
               <el-input v-model="formData.title" placeholder="例如：汽车焊接自动化方案" maxlength="100" show-word-limit
                 style="flex: 1;" />
 
@@ -80,18 +79,19 @@
           </el-form-item>
 
           <!-- 富文本内容 -->
-          <el-form-item label="方案详情" prop="content">
-            <div class="editor-wrapper">
-              <WangEditor v-model="formData.content" />
-            </div>
-          </el-form-item>
+          <!-- <el-form-item label="方案详情" prop="content"> -->
+          <div class="editor-wrapper">
+            <WangEditor v-model="formData.content" />
+          </div>
+          <!-- </el-form-item> -->
 
           <!-- 底部按钮 -->
-          <el-form-item>
-            <el-button type="primary" @click="handleSubmit" :loading="submitting" size="large">
-              {{ isEdit ? '保存修改' : '立即创建' }}
-            </el-button>
-          </el-form-item>
+          <!-- <el-form-item> -->
+          <el-button style="margin-top: 10px;width: 10%" type="primary" @click="handleSubmit" :loading="submitting"
+            size="large">
+            {{ isEdit ? '保存修改' : '立即创建' }}
+          </el-button>
+          <!-- </el-form-item> -->
         </el-form>
       </el-card>
     </div>
@@ -148,7 +148,7 @@
       </template>
     </el-dialog>
 
-    <!-- 2. 【新增】解决方案封面图管理对话框 -->
+    <!--  解决方案封面图管理对话框 -->
     <el-dialog v-model="coverDialogVisible" title="管理解决方案封面图" width="500px">
       <el-form :model="coverForm" label-width="90px">
         <el-form-item label="封面图配置">
@@ -211,7 +211,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, InfoFilled, Close } from '@element-plus/icons-vue';
 import WangEditor from '@/components/WangEditor.vue';
 
-import { uploadImageCommon, industryListApi, addOrUpdateIndustry, deleteIndustry, solutionDetailApi, addOrUpdateSolution, deleteSolution, solutionListApi } from '@/api/common';
+import { uploadImageCommon, industryListApi, addOrUpdateIndustry, deleteIndustry, solutionDetailApi, addOrUpdateSolution } from '@/api/common';
 
 const route = useRoute();
 const router = useRouter();
@@ -385,27 +385,27 @@ const removeCover = (key) => {
 
 // 确认保存封面图
 const confirmCoverDialog = () => {
-  // 将弹窗中的数据同步回主表单 formData
+
   formData.cover1 = coverForm.cover1;
   formData.cover2 = coverForm.cover2;
 
   coverDialogVisible.value = false;
   ElMessage.success('封面图配置已更新');
-  // 注意：这里只是更新了前端 formData，最终提交需点击右下角的“保存修改/立即创建”
+
 };
 
 
-// --- 4. 解决方案表单逻辑 (右侧) ---
+//   解决方案表单逻辑  
 const isEdit = computed(() => !!route.params.id);
 const solutionId = route.params.id;
 
-// 【修改】formData 增加 cover1, cover2 字段
+//  formData  
 const formData = reactive({
   title: '',
   fid: null,
   content: '',
-  cover1: '', // 新增
-  cover2: ''  // 新增
+  cover1: '',
+  cover2: ''
 });
 
 const rules = {
@@ -429,21 +429,19 @@ const loadDetail = async () => {
   if (!isEdit.value) return;
   submitting.value = true;
 
-  setTimeout(() => {
-    const mockData = {
-      title: "折弯解决方案 (编辑测试)",
-      fid: 1,
-      content: "<h2>这是详细内容...</h2>",
-      cover1: "https://via.placeholder.com/800x450?text=Cover1", // 模拟数据
-      cover2: "https://via.placeholder.com/800x450?text=Cover2"  // 模拟数据
-    };
-    formData.title = mockData.title;
-    formData.fid = mockData.fid;
-    formData.content = mockData.content;
-    formData.cover1 = mockData.cover1;
-    formData.cover2 = mockData.cover2;
+  try {
+    const res = await solutionDetailApi(solutionId);
+    if (res.code === 200) {
+      Object.assign(formData, res.data);
+      submitting.value = false;
+    } else {
+      ElMessage.error(res.msg || '加载详情失败');
+    }
+  } catch (error) {
+    ElMessage.error('加载详情失败');
+  } finally {
     submitting.value = false;
-  }, 500);
+  }
 };
 
 const handleSubmit = async () => {
@@ -456,8 +454,8 @@ const handleSubmit = async () => {
         title: formData.title,
         fid: formData.fid,
         content: formData.content,
-        cover1: formData.cover1, // 加入提交数据
-        cover2: formData.cover2  // 加入提交数据
+        cover1: formData.cover1,
+        cover2: formData.cover2
       };
       console.log('提交解决方案数据:', payload);
 
@@ -482,7 +480,6 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-/* ... 原有的样式保持不变 ... */
 .solution-page-container {
   height: 100%;
   width: 100%;
@@ -640,7 +637,7 @@ onMounted(() => {
     }
   }
 
-  /* 通用上传组样式 (复用给行业图标和解决方案封面) */
+  /* 通用上传组样式   */
   .icon-upload-group {
     display: flex;
     gap: 20px;
@@ -670,9 +667,8 @@ onMounted(() => {
         position: relative;
         width: 100%;
         max-width: 140px;
-        /* 稍微调大一点以适应封面图预览 */
+
         aspect-ratio: 16/9;
-        /* 保持 16:9 比例 */
 
         .preview-img {
           width: 100%;

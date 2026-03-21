@@ -97,6 +97,7 @@
             </template>
             <el-menu-item index="/cms/productList">产品列表</el-menu-item>
             <el-menu-item index="/cms/productAddEdit">增加编辑产品</el-menu-item>
+            <el-menu-item index="/cms/productCategory">产品分类</el-menu-item>
           </el-sub-menu>
           <!-- 解决方案solution -->
           <el-sub-menu index="solution-group">

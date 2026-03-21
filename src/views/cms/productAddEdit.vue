@@ -3,7 +3,9 @@
     <div class="page-header">
       <h2>新增产品</h2>
       <el-button type="primary" @click="handleSubmit" :loading="loading" size="large">
-        <el-icon style="margin-right: 5px"><Check /></el-icon>
+        <el-icon style="margin-right: 5px">
+          <Check />
+        </el-icon>
         立即创建
       </el-button>
     </div>
@@ -16,13 +18,8 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="产品分类" prop="category">
-              <el-cascader 
-                v-model="formData.category" 
-                :options="categoryOptions" 
-                placeholder="请选择分类以加载对应参数"
-                style="width: 100%" 
-                @change="handleCategoryChange" 
-              />
+              <el-cascader v-model="formData.category" :options="categoryOptions" placeholder="请选择分类以加载对应参数"
+                style="width: 100%" @change="handleCategoryChange" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -39,16 +36,11 @@
           <!-- 通用图片上传 -->
           <el-col :span="12">
             <el-form-item label="产品主图">
-              <el-upload 
-                action="#" 
-                :auto-upload="false" 
-                :limit="1" 
-                :file-list="mainImageList" 
-                list-type="picture-card"
-                :on-change="handleMainImageChange"
-                :on-remove="handleMainImageRemove"
-              >
-                <el-icon><Plus /></el-icon>
+              <el-upload action="#" :auto-upload="false" :limit="1" :file-list="mainImageList" list-type="picture-card"
+                :on-change="handleMainImageChange" :on-remove="handleMainImageRemove">
+                <el-icon>
+                  <Plus />
+                </el-icon>
               </el-upload>
               <div class="upload-tip" v-if="formData.productImgUrl">
                 图片地址：<span class="url-text">{{ formData.productImgUrl }}</span>
@@ -78,12 +70,7 @@
 
         <!-- 未选择分类时的提示 -->
         <div v-else-if="!formData.category.length">
-          <el-alert 
-            title="请先在上方选择产品分类，下方将自动加载对应的专用参数表" 
-            type="info" 
-            :closable="false" 
-            show-icon 
-          />
+          <el-alert title="请先在上方选择产品分类，下方将自动加载对应的专用参数表" type="info" :closable="false" show-icon />
         </div>
 
       </el-form>
@@ -147,7 +134,7 @@ const formData = reactive({
   category: [],
   productName: '',
   modelNumber: '',
-  productImgUrl: '', 
+  productImgUrl: '',
 });
 
 // 【修改点】独立的子组件数据容器
@@ -162,16 +149,16 @@ const sportFormData = reactive({});
 const handleCategoryChange = (val) => {
   if (val && val.length === 2) {
     const newSonId = val[1];
-    
+
     // 如果切换了不同的分类，清空对应的新旧数据，防止污染
     if (newSonId !== selectedSonId.value) {
       // 清空所有独立表单数据
       Object.keys(robotFormData).forEach(key => delete robotFormData[key]);
       Object.keys(sportFormData).forEach(key => delete sportFormData[key]);
-      
+
       console.log('分类切换，已重置独立表单数据');
     }
-    
+
     selectedSonId.value = newSonId;
   } else {
     selectedSonId.value = null;
@@ -182,7 +169,7 @@ const handleCategoryChange = (val) => {
 const handleMainImageChange = (uploadFile) => {
   mainImageList.value = [uploadFile];
   const rawFile = uploadFile.raw;
-  
+
   if (rawFile) {
     if (!rawFile.type.startsWith('image/')) {
       ElMessage.error('只能上传图片文件！');
@@ -224,7 +211,7 @@ const handleSubmit = async () => {
         }
         specificData = { ...robotFormData };
         productType = 'ROBOT';
-        
+
       } else if (selectedSonId.value && sportCategoryIds.includes(selectedSonId.value)) {
         if (!sportFormData.name) {
           ElMessage.warning('请填写运动控制器详细参数（至少填写名称）');
@@ -233,7 +220,7 @@ const handleSubmit = async () => {
         }
         specificData = { ...sportFormData };
         productType = 'SPORT_CONTROLLER';
-        
+
       } else if (selectedSonId.value && driverCategoryIds.includes(selectedSonId.value)) {
         ElMessage.info('伺服驱动器表单尚未开发完成');
         return;
@@ -300,6 +287,11 @@ const handleSubmit = async () => {
   .form-card {
     border-radius: 8px;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+
+    :deep(.el-row) {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
   }
 
   .upload-tip {

@@ -4,13 +4,12 @@
     <el-card class="search-card" shadow="hover">
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="方案名称">
-          <el-input v-model="searchForm.name" placeholder="请输入方案名称" clearable style="width: 240px"
+          <el-input v-model="searchForm.keyword" placeholder="请输入方案名称" clearable style="width: 240px"
             @keyup.enter="handleSearch" />
         </el-form-item>
 
         <el-form-item label="所属行业">
-          <el-select v-model="searchForm.industryId" placeholder="请选择行业" clearable style="width: 240px"
-            @change="handleSearch">
+          <el-select v-model="searchForm.fid" placeholder="请选择行业" clearable style="width: 240px" @change="handleSearch">
             <el-option v-for="item in industryOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
           <!-- 如果未来行业也有层级，可换回 el-cascader，目前看是平级行业 -->
@@ -88,7 +87,7 @@ import { Search, Refresh, Plus, Edit, Delete } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 // 引入真实的 API 方法
-import { solutionListApi, deleteSolution } from '@/api/common';
+import { solutionListApi, deleteSolution, industryListApi } from '@/api/common';
 
 const router = useRouter();
 
@@ -97,24 +96,26 @@ const tableData = ref([]);
 const industryOptions = ref([]); // 存储行业下拉选项 
 const loading = ref(false);
 
-// ---  搜索表单 ---
+//  搜索表单 
 const searchForm = reactive({
-  title: '',       // 后端的 title 字段
-  fid: null        // 后端的 fid (行业ID)
+  title: '',
+  keyword: '',
+  fid: null
 });
 
-// --- 3. 分页配置 ---
+//  分页配置 
 const currentPage = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
 
-// --- 4. 核心方法：获取列表 ---
+//   获取列表  
 const fetchList = async () => {
   loading.value = true;
   try {
 
     const params = {
-      fid: searchForm.fid || undefined, // 不传则查全部
+      fid: searchForm.fid || undefined,
+      keyword: searchForm.keyword,
       only_active: false // 是否只查启用的，根据需求调整
     };
 
@@ -134,7 +135,22 @@ const fetchList = async () => {
   }
 };
 
-// ---  后端不支持 title 模糊搜索  ---
+//  行业数据管理
+const fetchIndustries = async () => {
+  try {
+    const res = await industryListApi();
+    if (res.code === 200) {
+      industryOptions.value = res.data || [];
+    } else {
+      ElMessage.error(res.msg || '获取行业列表失败');
+    }
+  } catch (error) {
+    console.error(error);
+    ElMessage.error('网络异常，获取行业列表失败');
+  }
+};
+
+//    title 模糊搜索  
 const filteredData = computed(() => {
   return tableData.value.filter(item => {
     // 匹配标题 (后端字段是 title)
@@ -222,6 +238,7 @@ const handleDelete = (row) => {
 
 onMounted(() => {
   fetchList();
+  fetchIndustries();
 });
 </script>
 
