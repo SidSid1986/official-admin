@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-18 08:48:02
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-03-20 09:28:32
+ * @LastEditTime: 2026-03-21 09:40:02
  * @FilePath: \admin-demo\src\views\service.vue
  * @Description: 服务管理页面
 -->
@@ -87,9 +87,10 @@ onMounted(() => {
 <style scoped lang="scss">
 .service-container {
   padding: 20px;
-  background-color: #fff;
+  background-color: #f5f7fa;
   border-radius: 8px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  height: 100%;
 
   .title {
     font-size: 18px;

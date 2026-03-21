@@ -102,7 +102,7 @@ import { Plus, Star, Delete, Loading } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import WangEditor from '@/components/WangEditor.vue';
 import { useRouter, useRoute } from 'vue-router';
-import axios from 'axios';
+ 
 
 import { saveNews, uploadImageCommon, newsDetailApi } from '@/api/common.js';
 
@@ -116,23 +116,23 @@ const newsId = ref(null);
 
 
 
-const detailUrl = '/api/news/';             // 详情接口前缀
+const detailUrl = '/api/news/';             
 
 // --- 数据状态 ---
 const uploading = ref(false);
 const submitting = ref(false);
 
 const formData = reactive({
-  id: null,              // 编辑时有 ID
+  id: null,  
   title: '',
   content: '',
   coverImage: '',
-  summary: '',             // 存储图片 URL 字符串
-  publishDate: new Date().toISOString().split('T')[0], // 默认今天
-  isTop: false           // 布尔值，默认不置顶
+  summary: '',            
+  publishDate: new Date().toISOString().split('T')[0],  
+  isTop: false        
 });
 
-// --- 1. 初始化：如果是编辑模式，加载数据 ---
+//  编辑模式，加载数据  
 const loadDetail = async () => {
   if (!newsId.value) return;
 
@@ -154,7 +154,7 @@ const loadDetail = async () => {
 }
 
 
-// --- 2. 处理图片上传 (参考 About 逻辑) ---
+//  处理图片上传  
 const handleImageUpload = async (uploadFile) => {
   const file = uploadFile.raw;
   if (!file) return;
@@ -164,7 +164,7 @@ const handleImageUpload = async (uploadFile) => {
     ElMessage.error('只能上传图片文件！');
     return;
   }
-  if (file.size / 1024 / 1024 > 5) { // 新闻封面可以稍微大一点，比如 5MB
+  if (file.size / 1024 / 1024 > 5) {  
     ElMessage.error('图片大小不能超过 5MB！');
     return;
   }
@@ -195,9 +195,9 @@ const removeCoverImage = () => {
   formData.coverImage = '';
 };
 
-// --- 3. 提交保存 ---
+// 提交保存 
 const submitNews = async () => {
-  // 校验
+ 
   if (!formData.title.trim()) {
     ElMessage.warning('请填写新闻标题');
     return;
@@ -234,7 +234,7 @@ const submitNews = async () => {
 
   if (res.code === 200) {
     ElMessage.success(isEdit.value ? '修改成功' : '发布成功');
-    // 延迟跳转，让用户看到成功提示
+   
     setTimeout(() => {
       router.push('/news/newsList');
     }, 500);
@@ -264,8 +264,8 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .news-edit-container {
-  padding: 20px;
-  // background-color: red;
+  padding: 10px;
+  background-color: #f5f7fa;
   height: 100%;
 
   .card-header {

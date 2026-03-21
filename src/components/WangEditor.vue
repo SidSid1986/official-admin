@@ -212,7 +212,7 @@ onBeforeUnmount(() => {
 
 .editor-container {
   border: 1px solid #ccc;
-  margin-top: 10px;
+  // margin-top: 10px;
   height: 500px;
   display: flex;
   flex-direction: column;

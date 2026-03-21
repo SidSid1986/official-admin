@@ -17,21 +17,21 @@
     <!-- === 新闻列表表格 === -->
     <el-table :data="paginatedData" style="width: 100%; margin-top: 20px;" border stripe v-loading="loading">
       <!-- 标题列 -->
-      <el-table-column prop="title" label="新闻标题" min-width="300">
+      <el-table-column prop="title" label="新闻标题">
         <template #default="scope">
           <span class="title-text">{{ scope.row.title }}</span>
         </template>
       </el-table-column>
 
       <!-- 发布日期列 (可选，建议加上) -->
-      <el-table-column prop="date" label="发布日期" width="120" align="center" sortable>
+      <el-table-column prop="date" label="发布日期" align="center" sortable>
         <template #default="scope">
           {{ scope.row.date }}
         </template>
       </el-table-column>
 
       <!-- 是否置顶列 -->
-      <el-table-column prop="isTop" label="是否置顶" width="100" align="center">
+      <el-table-column prop="isTop" label="是否置顶" align="center">
         <template #default="scope">
           <el-tag :type="scope.row.isTop ? 'success' : 'info'" size="small" effect="plain">
             {{ scope.row.isTop ? '是' : '否' }}
@@ -66,13 +66,13 @@ import { ref, computed, nextTick, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { Search, Plus, Edit, Delete } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { newsListApi,deleteNews } from '@/api/common.js';
+import { newsListApi, deleteNews } from '@/api/common.js';
 
 const router = useRouter();
 
 
 
-// --- 1. 原始数据 (模拟) ---
+//  数据 (模拟) 
 // const originalNewsData = [
 //   {
 //     id: 1,
@@ -102,7 +102,7 @@ const router = useRouter();
 //   // 为了演示，我复制了你的前3条，并给它们加上了 isTop 字段
 // ];
 
-// --- 2. 状态管理 ---
+//  状态管理  
 const loading = ref(false);
 const searchKeyword = ref('');
 const newsData = ref([]); // 全量数据
@@ -111,9 +111,9 @@ const newsData = ref([]); // 全量数据
 const currentPage = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
-// --- 3. 计算属性 ---
+// 计算属性 
 
-// 第一步：先过滤出所有符合条件的数据
+//  先过滤出所有符合条件的数据
 const filteredData = computed(() => {
   if (!searchKeyword.value.trim()) {
     return newsData.value;
@@ -168,18 +168,23 @@ const handleEdit = (row) => {
 };
 
 const fetchNewsList = async (page, pageSize) => {
-  loading.value = true;
-
-  const res = await newsListApi(page, pageSize);
-  console.log(res);
-  if (res.code === 200) {
-    newsData.value = res.data;
-    total.value = res.total;
+  loading.value = true; // 开启加载状态
+  try {
+    const res = await newsListApi(page, pageSize);
+    console.log(res);
+    // 接口返回但状态码非200的情况
+    if (res.code === 200) {
+      newsData.value = res.data;
+      total.value = res.total;
+    } else {
+      ElMessage.error(res.msg || '获取新闻列表失败');
+    }
+  } catch (error) {
+    console.error('获取新闻列表接口请求失败：', error);
+    ElMessage.error('网络异常或服务器错误，请联系管理员');
+  } finally {
     loading.value = false;
-  } else {
-    ElMessage.error(res.msg || '获取新闻列表失败');
   }
-
 };
 
 // 删除操作
@@ -200,7 +205,7 @@ const handleDelete = (row) => {
     } else {
       ElMessage.error(res.msg || '删除新闻失败');
     }
-     
+
   }).catch(() => { });
 };
 
@@ -213,7 +218,7 @@ onMounted(() => {
 .news-list-container {
   padding: 20px;
   background-color: #f5f7fa;
-  height:100%;
+  height: 100%;
 
   .header-actions {
     display: flex;

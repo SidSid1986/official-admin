@@ -221,11 +221,13 @@ onMounted(() => {
 .solution-container {
   padding: 20px;
   background-color: #f5f7fa;
-  min-height: 100vh;
+  height:100%;
 
   .search-card {
     margin-bottom: 20px;
     border-radius: 8px;
+    // border:1px solid red;
+    padding:10px;
 
     .action-bar {
       display: flex;
@@ -264,6 +266,8 @@ onMounted(() => {
       display: flex;
       justify-content: flex-end;
       margin-top: 20px;
+      // border:1px solid red;
+      padding:10px;
     }
   }
 

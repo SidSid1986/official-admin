@@ -38,7 +38,7 @@
       <el-aside class="admin-sidebar" :width="sidebarOpened ? '220px' : '70px'">
         <!-- 
            添加 router 属性
-          这样 el-menu-item 的 index 直接对应路由 path，点击自动跳转，无需 handleMenuSelect
+           el-menu-item 的 index 直接对应路由 path，点击自动跳转，无需 handleMenuSelect
         -->
         <!-- 
            :default-active="$route.path"
@@ -248,6 +248,7 @@ const handleLogout = () => {
   }
 }
 
+
 .admin-main {
   display: flex;
   flex: 1;
@@ -283,14 +284,16 @@ const handleLogout = () => {
   .admin-content {
     flex: 1;
     background-color: #f5f7fa;
-    padding: 30px;
     overflow-y: auto;
     font-size: 16px;
     display: flex;
     flex-direction: column;
+    // border: 2px solid red;
+    padding: 10px !important;
 
     .content-breadcrumb {
-      margin-bottom: 10px;
+      // border: 1px solid red;
+      margin-bottom: 5px;
       font-size: 16px;
       // user-select: none;
 
@@ -324,8 +327,8 @@ const handleLogout = () => {
 }
 
 .admin-footer {
-  height: 60px;
-  line-height: 60px;
+  height: 40px;
+  line-height: 40px;
   text-align: center;
   background-color: #fff;
   color: #666;

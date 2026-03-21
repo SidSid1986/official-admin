@@ -8,36 +8,16 @@
         </div>
       </template>
 
-      <el-form 
-        ref="formRef" 
-        :model="formData" 
-        :rules="rules" 
-        label-width="100px" 
-        status-icon
-      >
+      <el-form ref="formRef" :model="formData" :rules="rules" label-width="100px" status-icon>
         <!-- 方案名称 -->
         <el-form-item label="方案名称" prop="name">
-          <el-input 
-            v-model="formData.name" 
-            placeholder="例如：汽车焊接自动化方案" 
-            maxlength="100" 
-            show-word-limit
-          />
+          <el-input v-model="formData.name" placeholder="例如：汽车焊接自动化方案" maxlength="100" show-word-limit />
         </el-form-item>
 
-        <!-- 所属行业 (级联/下拉) -->
+        <!-- 所属行业  -->
         <el-form-item label="所属行业" prop="fid">
-          <el-select 
-            v-model="formData.fid" 
-            placeholder="请选择所属行业" 
-            style="width: 100%"
-          >
-            <el-option 
-              v-for="item in industryOptions" 
-              :key="item.id" 
-              :label="item.name" 
-              :value="item.id" 
-            />
+          <el-select v-model="formData.fid" placeholder="请选择所属行业" style="width: 100%">
+            <el-option v-for="item in industryOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
 
@@ -53,7 +33,7 @@
           <el-button type="primary" @click="handleSubmit" :loading="submitting" size="large">
             {{ isEdit ? '保存修改' : '立即创建' }}
           </el-button>
-          <el-button @click="goBack">取消</el-button>
+          <!-- <el-button @click="goBack">取消</el-button> -->
         </el-form-item>
       </el-form>
     </el-card>
@@ -103,14 +83,15 @@ const rules = {
   fid: [{ required: true, message: '请选择所属行业', trigger: 'change' }],
   content: [
     { required: true, message: '请输入方案详情内容', trigger: 'blur' },
-    { validator: (rule, value, callback) => {
+    {
+      validator: (rule, value, callback) => {
         // 简单判断是否为空标签
         if (!value || value === '<p><br></p>' || value.trim() === '') {
           callback(new Error('方案详情不能为空'));
         } else {
           callback();
         }
-      }, trigger: 'blur' 
+      }, trigger: 'blur'
     }
   ]
 };
@@ -120,7 +101,7 @@ const rules = {
 // 加载数据 (编辑模式)
 const loadDetail = async () => {
   if (!isEdit.value) return;
-  
+
   submitting.value = true;
   // 模拟 API 请求
   setTimeout(() => {
@@ -131,11 +112,11 @@ const loadDetail = async () => {
       fid: 1, // 汽车行业
       content: "<h2>这是从后端加载的详细内容...</h2><p>包含具体的工艺流程图和技术参数。</p>"
     };
-    
+
     formData.name = mockData.name;
     formData.fid = mockData.fid;
     formData.content = mockData.content;
-    
+
     submitting.value = false;
   }, 800);
 };
@@ -143,11 +124,11 @@ const loadDetail = async () => {
 // 提交
 const handleSubmit = async () => {
   if (!formRef.value) return;
-  
+
   await formRef.value.validate(async (valid) => {
     if (valid) {
       submitting.value = true;
-      
+
       const payload = {
         id: isEdit.value ? solutionId : undefined,
         name: formData.name,
@@ -163,7 +144,7 @@ const handleSubmit = async () => {
         submitting.value = false;
         // 返回上一页
         setTimeout(() => router.back(), 1000);
-        
+
         // 真实代码:
         // if (isEdit.value) await api.updateSolution(payload);
         // else await api.createSolution(payload);
@@ -183,14 +164,16 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .solution-edit-container {
-  padding: 20px;
-  background-color: #f5f7fa;
-  min-height: 100vh;
+  // padding: 20px;
+  // background-color: yellow;
+  height: 100%;
 
   .edit-card {
-    max-width: 1000px;
+    width: 1000px;
     margin: 0 auto;
     border-radius: 8px;
+    height:100%;
+    // border:1px solid red;
 
     .card-header {
       display: flex;
@@ -205,9 +188,8 @@ onMounted(() => {
       border: 1px solid #dcdfe6;
       border-radius: 4px;
       overflow: hidden;
-      
-      // 防止编辑器高度塌陷，可根据你的 WangEditor 组件内部样式调整
-      min-height: 400px; 
+      min-height: 300px;
+      // background-color: red;
     }
   }
 }

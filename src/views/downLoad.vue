@@ -103,28 +103,34 @@ const total = ref(0);
 const fetchFileList = async (currentPage, pageSize) => {
   loading.value = true;
 
-  const res = await fileListApi(
-    currentPage,
-    pageSize
-  );
+  try {
+    const res = await fileListApi(
+      currentPage,
+      pageSize
+    );
 
-  if (res.code === 200) {
-    // 更新总数
-    total.value = res.total;
+    if (res.code === 200) {
+      // 更新总数
+      total.value = res.total;
 
-    // 数据映射
-    fileList.value = res.data.map(item => ({
-      uid: item.id,
-      name: item.original_name,
-      url: item.file_path,
-      size: item.file_size,
-      upload_time: item.upload_time,
-      deleting: false,
-      downloading: false
-    }));
+      // 数据映射
+      fileList.value = res.data.map(item => ({
+        uid: item.id,
+        name: item.original_name,
+        url: item.file_path,
+        size: item.file_size,
+        upload_time: item.upload_time,
+        deleting: false,
+        downloading: false
+      }));
+    } else {
+      ElMessage.error(res.msg || '加载失败');
+    }
+  } catch (error) {
+    console.error('获取文件列表接口请求失败：', error);
+    ElMessage.error('网络异常或服务器错误，请联系管理员');
+  } finally {
     loading.value = false;
-  } else {
-    ElMessage.error(res.msg || '加载失败');
   }
 }
 
@@ -256,8 +262,9 @@ onMounted(() => {
 <style scoped>
 .download-container {
   padding: 20px;
-  background: #fff;
+  background-color: #f5f7fa;
   border-radius: 8px;
+  height: 100%;
 }
 
 .download-title {
