@@ -42,6 +42,7 @@
         </el-col>
         <el-col :span="6">
           <el-form-item label="防护等级">
+            <!-- 注意：这里保持 IP 字段名，确保与父组件映射一致 (ip_level -> IP) -->
             <el-input v-model="formData.IP" placeholder="例如：IP54" />
           </el-form-item>
         </el-col>
@@ -77,23 +78,33 @@
           </el-form-item>
         </el-col>
 
-        <!-- 第七行：图片上传 (核心修改部分) -->
+        <!-- 第七行：图片上传 (已修改为真实上传逻辑) -->
         <el-col :span="24">
           <el-form-item label="产品详情图片">
-            <el-upload 
-              action="#" 
-              :auto-upload="false" 
-              :limit="1" 
-              :file-list="fileList" 
-              list-type="picture-card"
-              :on-change="handleFileChange"
-              :on-remove="handleRemove"
-            >
-              <el-icon><Plus /></el-icon>
+            <el-upload action="#" :auto-upload="false" :limit="1" :file-list="fileList" list-type="picture-card"
+              :on-change="handleFileChange" :on-remove="handleRemove" :disabled="uploading">
+              <div v-if="uploading" class="uploading-status">
+                <el-icon class="is-loading">
+                  <Loading />
+                </el-icon>
+                <span>上传中...</span>
+              </div>
+              <el-icon v-else>
+                <Plus />
+              </el-icon>
             </el-upload>
+
             <div class="uploader-tip">
-              <span v-if="imageUrl">当前图片地址：<b>{{ imageUrl }}</b></span>
-              <span v-else>上传图片后将自动生成地址</span>
+              <span v-if="formData.detailImg">
+                ✅ 图片已上传成功<br>
+                地址：<b>{{ formData.detailImg }}</b>
+              </span>
+              <span v-else-if="uploading">
+                ⏳ 正在上传，请稍候...
+              </span>
+              <span v-else>
+                选择图片后将自动上传至服务器
+              </span>
             </div>
           </el-form-item>
         </el-col>
@@ -105,13 +116,12 @@
 
 <script setup>
 import { reactive, watch, ref } from 'vue';
-import { Plus } from '@element-plus/icons-vue';
+import { Plus, Loading } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 
-// 定义 emits
-const emit = defineEmits(['update:modelValue']);
+import { uploadImageCommon } from '@/api/common';
 
-// 定义 props
+const emit = defineEmits(['update:modelValue']);
 const props = defineProps({
   modelValue: {
     type: Object,
@@ -119,9 +129,8 @@ const props = defineProps({
   }
 });
 
-// 状态变量
 const fileList = ref([]);
-const imageUrl = ref(''); // 存储生成的图片地址
+const uploading = ref(false); // 上传状态锁
 
 // 初始化表单数据
 const formData = reactive({
@@ -131,45 +140,71 @@ const formData = reactive({
   maxArmSpan: '',
   perprecision: '',
   weight: '',
-  IP: '',
+  IP: '',       // 对应后端的 ip_level
   insType: '',
   driveType: '',
   insRequire: '',
   authSupport: '',
   remark: '',
-  detailImg: '' // 专门存放图片地址
+  detailImg: '' // 存储后端返回的真实 URL
 });
 
 /**
- * 处理文件选择变化
+ * 处理文件选择变化 - 核心修改
  */
-const handleFileChange = (uploadFile) => {
-  // 1. 更新文件列表，保持只有一张
-  fileList.value = [uploadFile];
-
-  // 2. 生成图片地址
-  // 场景 A: 如果是真实后端，这里应该调用 API 上传文件，拿到后端返回的 URL
-  // 场景 B: 本地预览/模拟，使用 URL.createObjectURL 生成 blob 地址
+const handleFileChange = async (uploadFile) => {
   const rawFile = uploadFile.raw;
-  
-  if (rawFile) {
-    // 简单校验图片格式
-    const isImage = rawFile.type.startsWith('image/');
-    if (!isImage) {
-      ElMessage.error('只能上传图片文件！');
-      fileList.value = [];
-      imageUrl.value = '';
-      formData.detailImg = '';
-      return;
+
+  if (!rawFile) return;
+
+  // 1. 基础校验
+  if (!rawFile.type.startsWith('image/')) {
+    ElMessage.error('只能上传图片文件！');
+    fileList.value = [];
+    formData.detailImg = '';
+    return;
+  }
+
+  // 2. 锁定状态
+  uploading.value = true;
+  fileList.value = [uploadFile]; // 先显示本地预览
+
+  try {
+    // 3. 构建 FormData
+    const fd = new FormData();
+    fd.append('file', rawFile);
+    fd.append('module', 'product'); // 根据后端要求添加 module 参数
+
+    // 4. 调用上传接口
+    console.log('🚀 开始上传详情图片...');
+    const res = await uploadImageCommon(fd);
+
+    if (res.code === 200 && res.data && res.data.url) {
+      const realUrl = res.data.url;
+
+      // 5. 更新数据
+      formData.detailImg = realUrl;
+
+      // 更新 fileList 中的 url，确保 el-upload 能正确显示回显
+      fileList.value = [{
+        name: rawFile.name,
+        url: realUrl
+      }];
+
+      ElMessage.success('图片上传成功');
+      console.log('✅ 图片上传完成，URL:', realUrl);
+    } else {
+      throw new Error(res.msg || '上传失败');
     }
 
-    // 生成本地预览地址 (例如: blob:http://localhost:5173/xxx-xxx-xxx)
-    imageUrl.value = URL.createObjectURL(rawFile);
-    
-    // 3. 将地址同步到表单数据中，父组件就能拿到了
-    formData.detailImg = imageUrl.value;
-    
-    console.log('图片已选择，生成地址:', imageUrl.value);
+  } catch (error) {
+    console.error('图片上传错误:', error);
+    ElMessage.error('图片上传失败：' + (error.message || '未知错误'));
+    // 失败则清空
+    fileList.value = [];
+    formData.detailImg = '';
+  } finally {
+    uploading.value = false;
   }
 };
 
@@ -178,30 +213,29 @@ const handleFileChange = (uploadFile) => {
  */
 const handleRemove = () => {
   fileList.value = [];
-  imageUrl.value = '';
-  formData.detailImg = ''; // 清空地址
-  console.log('图片已删除');
+  formData.detailImg = '';
+  console.log('图片已移除');
 };
 
-// 监听本地变化，同步给父组件 (包含图片地址)
+// 监听本地变化，同步给父组件
 watch(formData, (newVal) => {
   emit('update:modelValue', { ...newVal });
 }, { deep: true });
 
-// 如果父组件传入了初始值 (编辑模式)，同步到本地
+// 监听父组件传入的值 (编辑模式回显)
 watch(() => props.modelValue, (newVal) => {
   if (newVal && Object.keys(newVal).length > 0) {
+    // 合并数据
     Object.assign(formData, newVal);
-    
-    // 如果编辑时有图片地址，需要还原 fileList 以便显示预览图
+
+    // 如果有图片地址，还原 fileList 用于展示
     if (formData.detailImg) {
-      imageUrl.value = formData.detailImg;
-      // 注意：编辑模式下，如果没有原始 File 对象，el-upload 可能无法完美展示预览
-      // 这里做一个简单的模拟对象用于展示
       fileList.value = [{
         name: 'detail-image.png',
         url: formData.detailImg
       }];
+    } else {
+      fileList.value = [];
     }
   }
 }, { immediate: true, deep: true });
@@ -229,19 +263,28 @@ watch(() => props.modelValue, (newVal) => {
     margin-top: 8px;
     font-size: 12px;
     color: #909399;
-    
+    line-height: 1.5;
+
     b {
       color: #409EFF;
       word-break: break-all;
     }
   }
-  
-  // 限制上传组件宽度，避免占满整行
+
+  .uploading-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #409EFF;
+  }
+
   :deep(.el-upload--picture-card) {
     width: 100px;
     height: 100px;
   }
-  
+
   :deep(.el-upload-list--picture-card .el-upload-list__item) {
     width: 100px;
     height: 100px;

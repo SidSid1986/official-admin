@@ -22,13 +22,24 @@
         <el-col :span="12">
           <el-form-item label="产品主图">
             <el-upload action="#" :auto-upload="false" :limit="1" :file-list="mainImageList" list-type="picture-card"
-              :on-change="handleMainImageChange" :on-remove="handleMainImageRemove">
-              <el-icon>
+              :on-change="handleMainImageChange" :on-remove="handleMainImageRemove" :disabled="uploading">
+              <div v-if="uploading" class="uploading-status">
+                <el-icon class="is-loading">
+                  <Loading />
+                </el-icon>
+                <span>上传中...</span>
+              </div>
+              <el-icon v-else>
                 <Plus />
               </el-icon>
             </el-upload>
+
             <div class="upload-tip" v-if="formData.img">
+              ✅ 图片已上传成功<br>
               地址：<span class="url-text">{{ formData.img }}</span>
+            </div>
+            <div class="upload-tip" v-else-if="uploading">
+              ⏳ 正在上传，请稍候...
             </div>
           </el-form-item>
         </el-col>
@@ -122,27 +133,18 @@
         </el-col>
       </el-row>
 
-      <!-- 第五部分：应用图标 (可选，如果需要录入 iconContents) -->
-      <!-- <el-divider content-position="left">🏭 应用领域图标 (可选)</el-divider>
-       <el-row :gutter="20">
-         <el-col :span="24">
-           <el-alert title="此处可添加类似机器人组件的图标上传逻辑，若不需要可忽略" type="info" :closable="false" />
-         </el-col>
-       </el-row> -->
-
     </el-form>
   </div>
 </template>
 
 <script setup>
 import { reactive, ref, watch } from 'vue';
-import { Plus } from '@element-plus/icons-vue';
+import { Plus, Loading } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
+// ✅ 引入上传 API
+import { uploadImageCommon } from '@/api/common';
 
-// 定义 emits
 const emit = defineEmits(['update:modelValue']);
-
-// 定义 props
 const props = defineProps({
   modelValue: {
     type: Object,
@@ -150,49 +152,88 @@ const props = defineProps({
   }
 });
 
-// 固定标题配置
 const titles = reactive({
   title1: '编程灵活',
   title2: '通讯丰富',
   title3: '认证齐全'
 });
 
-// 图片列表
 const mainImageList = ref([]);
+const uploading = ref(false); // 上传状态锁
 
-// 初始化表单数据 (完全对应详情页结构)
 const formData = reactive({
-  id: Date.now(), // 临时ID
+  id: Date.now(),
   name: '',
   detail: '',
   line1: '',
   line2: '',
   line3: '',
-  img: '', // 图片地址
+  img: '', // 存储后端返回的真实 URL
 
-  // 配件列表 (对应 sportPram)
   sportPram: [
     { id: 1, lineName: '', lineValue: '' }
   ],
-
-  // 轴配置列表 (对应 sportPramTwo)
   sportPramTwo: [
     { id: 1, lineName: '', lineValue: '' }
   ]
 });
 
-// --- 图片处理逻辑 ---
-const handleMainImageChange = (uploadFile) => {
-  mainImageList.value = [uploadFile];
+/**
+ * 处理文件选择变化 - 核心修改
+ */
+const handleMainImageChange = async (uploadFile) => {
   const rawFile = uploadFile.raw;
-  if (rawFile) {
-    if (!rawFile.type.startsWith('image/')) {
-      ElMessage.error('只能上传图片！');
-      mainImageList.value = [];
-      formData.img = '';
-      return;
+
+  if (!rawFile) return;
+
+  // 1. 基础校验
+  if (!rawFile.type.startsWith('image/')) {
+    ElMessage.error('只能上传图片！');
+    mainImageList.value = [];
+    formData.img = '';
+    return;
+  }
+
+  // 2. 锁定状态
+  uploading.value = true;
+  mainImageList.value = [uploadFile]; // 先显示本地预览
+
+  try {
+    // 3. 构建 FormData
+    const fd = new FormData();
+    fd.append('file', rawFile);
+    fd.append('module', 'product');
+
+    // 4. 调用上传接口
+    console.log('🚀 开始上传控制器主图...');
+    const res = await uploadImageCommon(fd);
+
+    if (res.code === 200 && res.data && res.data.url) {
+      const realUrl = res.data.url;
+
+      // 5. 更新数据
+      formData.img = realUrl;
+
+      // 更新 fileList 中的 url，确保 el-upload 能正确显示回显
+      mainImageList.value = [{
+        name: rawFile.name,
+        url: realUrl
+      }];
+
+      ElMessage.success('图片上传成功');
+      console.log('✅ 图片上传完成，URL:', realUrl);
+    } else {
+      throw new Error(res.msg || '上传失败');
     }
-    formData.img = URL.createObjectURL(rawFile);
+
+  } catch (error) {
+    console.error('图片上传错误:', error);
+    ElMessage.error('图片上传失败：' + (error.message || '未知错误'));
+    // 失败则清空
+    mainImageList.value = [];
+    formData.img = '';
+  } finally {
+    uploading.value = false;
   }
 };
 
@@ -202,8 +243,6 @@ const handleMainImageRemove = () => {
 };
 
 // --- 表格操作逻辑 ---
-
-// 配件列表操作
 const addPram = () => {
   const newId = formData.sportPram.length > 0 ? Math.max(...formData.sportPram.map(i => i.id)) + 1 : 1;
   formData.sportPram.push({ id: newId, lineName: '', lineValue: '' });
@@ -213,7 +252,6 @@ const removePram = (index) => {
   formData.sportPram.splice(index, 1);
 };
 
-// 轴配置列表操作
 const addPramTwo = () => {
   const newId = formData.sportPramTwo.length > 0 ? Math.max(...formData.sportPramTwo.map(i => i.id)) + 1 : 1;
   formData.sportPramTwo.push({ id: newId, lineName: '', lineValue: '' });
@@ -224,10 +262,7 @@ const removePramTwo = (index) => {
 };
 
 // --- 双向绑定同步 ---
-
-// 监听内部变化，发给父组件
 watch(formData, (newVal) => {
-  // 深拷贝发送，防止引用问题
   const dataToSend = JSON.parse(JSON.stringify(newVal));
   emit('update:modelValue', dataToSend);
 }, { deep: true });
@@ -235,12 +270,12 @@ watch(formData, (newVal) => {
 // 监听父组件传入的值 (编辑模式)
 watch(() => props.modelValue, (newVal) => {
   if (newVal && Object.keys(newVal).length > 0) {
-    // 合并对象，保留响应式
     Object.assign(formData, newVal);
 
-    // 如果编辑时有图片，还原 fileList
     if (formData.img) {
       mainImageList.value = [{ name: 'product-img', url: formData.img }];
+    } else {
+      mainImageList.value = [];
     }
   }
 }, { immediate: true, deep: true });
@@ -268,12 +303,22 @@ watch(() => props.modelValue, (newVal) => {
     margin-top: 8px;
     font-size: 12px;
     color: #909399;
+    line-height: 1.5;
 
     .url-text {
       color: #409EFF;
       word-break: break-all;
       font-family: monospace;
     }
+  }
+
+  .uploading-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #409EFF;
   }
 
   .dynamic-table-container {

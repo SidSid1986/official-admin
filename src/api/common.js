@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-16 15:03:38
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-03-21 15:58:00
+ * @LastEditTime: 2026-03-23 17:00:40
  * @FilePath: \admin-demo\src\api\common.js
  * @Description:
  */
@@ -151,6 +151,69 @@ export function uploadImageCommon(data) {
     headers: {
       "Content-Type": "multipart/form-data",
     },
+  });
+}
+
+export function categoryTree() {
+  return request({
+    url: "api/category/tree",
+    method: "get",
+  });
+}
+
+export function saveCategory(data) {
+  return request({
+    url: "api/category/save",
+    method: "post",
+    data,
+  });
+}
+
+export function deleteCategory(id) {
+  return request({
+    url: `api/category/${id}`,
+    method: "delete",
+  });
+}
+
+//增加产品机器人
+export function saveProductRobot(data) {
+  return request({
+    url: "api/product/robot/save",
+    method: "post",
+    data,
+  });
+}
+
+//增加产品运动控制器
+export function saveProductsSport(data) {
+  return request({
+    url: "api/product/sport/save",
+    method: "post",
+    data,
+  });
+}
+
+export function getProductList(params) {
+  return request({
+    url: "api/product/list",
+    method: "get",
+    params,
+  });
+}
+
+// 删除产品
+export function deleteProduct(id) {
+  return request({
+    url: `api/product/${id}`,
+    method: "delete",
+  });
+}
+
+export function getProductDetail(id) {
+  return request({
+    url: `api/product/detail/${id}`,
+    method: "get",
   });
 }
 

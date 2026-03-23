@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-16 15:03:38
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-03-21 16:36:39
+ * @LastEditTime: 2026-03-23 15:22:55
  * @FilePath: \admin-demo\src\router\index.js
  * @Description:
  */
@@ -54,6 +54,27 @@ const routes = [
           ],
         },
       },
+      //关于我们
+      {
+        path: "about",
+        name: "About",
+        component: () => import("@/views/about.vue"),
+        meta: {
+          title: "关于我们",
+          breadcrumb: [{ title: "关于我们", path: "/about" }],
+        },
+      },
+      //资料下载
+      {
+        path: "download",
+        name: "Download",
+        component: () => import("@/views/download.vue"),
+        meta: {
+          title: "资料下载",
+          breadcrumb: [{ title: "资料下载", path: "/download" }],
+        },
+      },
+
       // --- 产品管理 ---
       {
         path: "cms/productList",
