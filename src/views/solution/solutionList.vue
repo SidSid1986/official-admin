@@ -5,7 +5,7 @@
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="方案名称">
           <el-input v-model="searchForm.keyword" placeholder="请输入方案名称" clearable style="width: 240px"
-            @keyup.enter="handleSearch" />
+            @change="handleSearch" />
         </el-form-item>
 
         <el-form-item label="所属行业">
@@ -23,13 +23,13 @@
 
       <div class="action-bar">
         <el-button type="success" :icon="Plus" @click="goToCreate">新增解决方案</el-button>
-        <div class="data-info">共找到 <span class="highlight">{{ filteredData.length }}</span> 条方案</div>
+        <div class="data-info">共找到 <span class="highlight">{{ total }}</span> 条方案</div>
       </div>
     </el-card>
 
     <!-- === 2. 数据表格 === -->
     <el-card class="table-card" shadow="never">
-      <el-table :data="paginatedData" style="width: 100%" v-loading="loading" border stripe
+      <el-table :data="tableData" style="width: 100%" v-loading="loading" border stripe
         header-cell-class-name="table-header-gray">
         <!-- 方案名称 (点击可编辑) -->
         <el-table-column label="方案名称" min-width="250">
@@ -73,7 +73,7 @@
       <!-- === 3. 分页器 === -->
       <div class="pagination-container">
         <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50]"
-          layout="total, sizes, prev, pager, next, jumper" :total="filteredData.length" @size-change="handleSizeChange"
+          layout="total, sizes, prev, pager, next, jumper" :total="total" @size-change="handleSizeChange"
           @current-change="handleCurrentChange" />
       </div>
     </el-card>
@@ -114,6 +114,8 @@ const fetchList = async () => {
   try {
 
     const params = {
+      page: currentPage.value,
+      page_size: pageSize.value,
       fid: searchForm.fid || undefined,
       keyword: searchForm.keyword,
       only_active: false // 是否只查启用的，根据需求调整
@@ -122,8 +124,9 @@ const fetchList = async () => {
     const res = await solutionListApi(params);
 
     if (res.code === 200) {
-      tableData.value = res.data || [];
-      total.value = tableData.value.length;
+      console.log("chadaole");
+      tableData.value = res.data.items;
+      total.value = res.data.total || 0;
     } else {
       ElMessage.error(res.msg || '获取列表失败');
     }
@@ -150,31 +153,17 @@ const fetchIndustries = async () => {
   }
 };
 
-//    title 模糊搜索  
-const filteredData = computed(() => {
-  return tableData.value.filter(item => {
-    // 匹配标题 (后端字段是 title)
-    const matchTitle = !searchForm.title || item.title.includes(searchForm.title);
-    // 匹配行业 ID
-    const matchIndustry = !searchForm.fid || item.fid === searchForm.fid;
-    return matchTitle && matchIndustry;
-  });
-});
 
-// --- 6. 分页计算 ---
-const paginatedData = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  const end = start + pageSize.value;
-  return filteredData.value.slice(start, end);
-});
 
 const handleSizeChange = (val) => {
   pageSize.value = val;
   currentPage.value = 1;
+  fetchList();
 };
 
 const handleCurrentChange = (val) => {
   currentPage.value = val;
+  fetchList();
 };
 
 // --- 7. 操作事件 ---
@@ -191,7 +180,7 @@ const handleReset = () => {
 
 
 const getIndustryName = (row) => {
-  console.log(row);
+
   if (row.industry_name) return row.industry_name;
   return `行业ID:${row.fid}`;
 };

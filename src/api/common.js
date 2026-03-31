@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-16 15:03:38
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-03-23 17:00:40
+ * @LastEditTime: 2026-03-31 09:17:13
  * @FilePath: \admin-demo\src\api\common.js
  * @Description:
  */
@@ -37,9 +37,9 @@ export function putServiceContent(data) {
   });
 }
 
-export function fileListApi(page, pageSize) {
+export function fileListApi(page, pageSize,keyword) {
   return request({
-    url: `api/files/list?page=${page}&page_size=${pageSize}`,
+    url: `api/files/list?page=${page}&page_size=${pageSize}&keyword=${keyword}`,
     method: "get",
   });
 }

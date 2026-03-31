@@ -50,15 +50,15 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="状态" width="100" align="center">
+        <!-- <el-table-column label="状态" width="100" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.status === 1 ? 'success' : 'info'" size="small">
               {{ scope.row.status === 1 ? '启用' : '禁用' }}
             </el-tag>
           </template>
-        </el-table-column>
+        </el-table-column> -->
 
-        <el-table-column label="操作" width="300" fixed="right" align="center">
+        <el-table-column label="操作" width="400" fixed="right" align="center">
           <template #default="scope">
             <!-- 编辑/保存 (名称) -->
             <el-button v-if="!scope.row.isEditing" type="primary" link :icon="Edit" @click="handleEdit(scope.row)">
@@ -71,7 +71,7 @@
 
             <el-divider direction="vertical" />
 
-            <!-- === 修改：统一使用弹窗进行详细编辑 (可改类型) === -->
+            <!--  弹窗进行详细编辑  -->
             <el-button type="warning" link :icon="Setting" @click="openDialog('edit', scope.row)">
               详情/改型
             </el-button>
@@ -95,12 +95,12 @@
       </el-table>
     </el-card>
 
-    <!-- === 3. 新增/编辑 对话框 === -->
+    <!-- 新增/编辑 对话框  -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" @close="resetForm"
       :close-on-click-modal="false">
       <el-form :model="form" label-width="110px" :rules="rules" ref="formRef">
 
-        <!-- 提示条：如果是编辑模式且是一级分类 -->
+        <!--  编辑模式且是一级分类 -->
         <el-alert v-if="operateType === 'edit' && form.parent_id === null" title="正在编辑一级分类" type="info" show-icon
           :closable="false" style="margin-bottom: 15px;">
           您可以在此修改分类名称、<strong>产品类型</strong> 及其他属性。
@@ -110,10 +110,10 @@
           <el-input v-model="form.name" placeholder="请输入分类名称" autofocus />
         </el-form-item>
 
-        <!-- === 核心逻辑：类型选择框 === -->
+
         <!-- 显示条件：
-             1. 新增模式 + 无父级 (新增一级)
-             2. 编辑模式 + 无父级 (编辑一级，允许改类型)
+            新增模式 + 无父级 (新增一级)
+            编辑模式 + 无父级 (编辑一级，允许改类型)
         -->
         <el-form-item v-if="form.parent_id === null" label="产品类型" prop="category_type">
           <el-select v-model="form.category_type" placeholder="请选择该产品线类型" style="width: 100%" clearable>
@@ -393,6 +393,7 @@ const handleSortChange = async (row) => {
     };
     await saveCategory(payload);
     ElMessage.success({ message: '排序已更新', duration: 1000 });
+    fetchData();
   } catch (error) {
     ElMessage.error('排序更新失败');
     fetchData();

@@ -98,6 +98,7 @@ const loading = ref(false);
 const currentPage = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
+const keyword = ref('');
 
 // --- 方法：获取文件列表 ---
 const fetchFileList = async (currentPage, pageSize) => {
@@ -106,7 +107,9 @@ const fetchFileList = async (currentPage, pageSize) => {
   try {
     const res = await fileListApi(
       currentPage,
-      pageSize
+      pageSize,
+      // 搜索关键词 
+      keyword.value
     );
 
     if (res.code === 200) {

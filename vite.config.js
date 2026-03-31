@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-16 15:07:07
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-03-19 14:44:25
+ * @LastEditTime: 2026-03-24 09:06:48
  * @FilePath: \admin-demo\vite.config.js
  * @Description:
  */
@@ -88,7 +88,7 @@ export default ({ mode }) => {
         "/api": {
           target: env.VITE_APP_API_HOST,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ""),
+          rewrite: (path) => path.replace(/^\/api/, "api"),
         },
         "/static": {
           target: env.VITE_APP_API_HOST,
