@@ -5,12 +5,12 @@
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="产品名称">
           <el-input v-model="searchForm.productName" placeholder="请输入名称" clearable style="width: 200px"
-            @keyup.enter="handleSearch" />
+            @change="handleSearch" />
         </el-form-item>
 
         <el-form-item label="产品型号">
           <el-input v-model="searchForm.modelNumber" placeholder="请输入型号" clearable style="width: 200px"
-            @keyup.enter="handleSearch" />
+            @change="handleSearch" />
         </el-form-item>
 
         <el-form-item label="产品分类">
@@ -106,7 +106,7 @@ import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { Search, Refresh, Plus, Edit, Delete, Picture } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { getProductList, deleteProduct, categoryTree } from '@/api/common'; // 引入 API
+import { productList, deleteProduct, categoryTree } from '@/api/common'; // 引入 API
 
 const router = useRouter();
 
@@ -158,13 +158,13 @@ const fetchData = async () => {
     const params = {
       page: currentPage.value,
       page_size: pageSize.value,
-      product_name: searchForm.productName || undefined,
+      keyword: searchForm.productName || undefined,
       model_number: searchForm.modelNumber || undefined,
       category_id: searchForm.childId || undefined,
       parent_category_id: searchForm.parentId || undefined
     };
 
-    const res = await getProductList(params);
+    const res = await productList(params);
     if (res.code === 200) {
       tableData.value = res.data;
       total.value = res.total;
@@ -192,6 +192,8 @@ const handleCategoryChange = (values) => {
     searchForm.parentId = values[0];
     searchForm.childId = values[1];
   }
+  fetchData();
+
 };
 
 // 搜索
@@ -222,7 +224,7 @@ const goToCreate = () => {
 };
 
 const handleEdit = (row) => {
-  router.push(`/cms/productAddEdit/${row.id}`);
+  router.push(`/cms/productAddEdit/${row.productType}/${row.id}`);
 };
 
 // 删除
@@ -248,12 +250,12 @@ const handleDelete = (row) => {
 
 // 辅助函数
 const getTypeTag = (type) => {
-  const map = { 'ROBOT': 'warning', 'SPORT_CONTROLLER': 'success', 'SERVO_DRIVER': 'info', 'SENSOR': 'primary' };
+  const map = { 'robot': 'warning', 'sport': 'success', 'servo': 'info', 'sensor': 'primary' };
   return map[type] || 'info';
 };
 
 const getTypeLabel = (type) => {
-  const map = { 'ROBOT': '机器人', 'SPORT_CONTROLLER': '运动控制器', 'SERVO_DRIVER': '伺服驱动器', 'SENSOR': '传感器' };
+  const map = { 'robot': '机器人', 'sport': '运动控制器', 'servo': '伺服驱动器', 'sensor': '传感器' };
   return map[type] || type;
 };
 

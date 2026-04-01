@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-16 15:03:38
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-03-23 15:22:55
+ * @LastEditTime: 2026-04-01 14:57:50
  * @FilePath: \admin-demo\src\router\index.js
  * @Description:
  */
@@ -89,7 +89,7 @@ const routes = [
         },
       },
       {
-        path: `cms/productAddEdit/:id?`,
+        path: `cms/productAddEdit/:productType?/:id?`,
         name: "ProductAddEdit",
         component: () => import("@/views/cms/productAddEdit.vue"),
         meta: {

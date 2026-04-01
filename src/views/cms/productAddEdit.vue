@@ -2,7 +2,7 @@
   <div class="product-add-container">
     <div class="page-header">
       <h2>
-        {{ editMode ? '编辑产品' : (currentProductType === 'ROBOT' ? '新增机器人产品' : '新增运动控制器') }}
+        {{ editMode ? '编辑产品' : (currentProductType === 'robot' ? '新增机器人产品' : '新增运动控制器') }}
       </h2>
       <el-button type="primary" @click="handleSubmit" :loading="loading" size="large">
         <el-icon style="margin-right: 5px">
@@ -64,12 +64,12 @@
         </el-row>
 
         <!-- === 动态区域 (关键：只有 currentProductType 有值才会显示) === -->
-        <div v-if="currentProductType === 'ROBOT'">
+        <div v-if="currentProductType === 'robot'">
           <el-divider content-position="left">🤖 机器人特有参数</el-divider>
           <RobotForm v-model="robotFormData" />
         </div>
 
-        <div v-else-if="currentProductType === 'SPORT_CONTROLLER'">
+        <div v-else-if="currentProductType === 'sport'">
           <el-divider content-position="left">🎮 控制器特有参数</el-divider>
           <SportForm v-model="sportFormData" />
         </div>
@@ -143,8 +143,8 @@ const transformTree = (nodes) => {
       label: node.label || node.name,
       children: transformTree(node.children),
     };
-    if (node.parentId === ROOT_ROBOT_ID) productTypeMap.set(node.id, 'ROBOT');
-    else if (node.parentId === ROOT_SPORT_ID) productTypeMap.set(node.id, 'SPORT_CONTROLLER');
+    if (node.parentId === ROOT_ROBOT_ID) productTypeMap.set(node.id, 'robot');
+    else if (node.parentId === ROOT_SPORT_ID) productTypeMap.set(node.id, 'sport');
     return newNode;
   });
 };
@@ -160,7 +160,7 @@ const findCategoryPath = (nodes, targetId, path = []) => {
   return null;
 };
 
-const getCategoryOptions = async () => {
+const getCategoryOptions = async (productType, id) => {
   console.log(' [1] 开始加载分类树...');
   try {
     const response = await categoryTree();
@@ -174,7 +174,7 @@ const getCategoryOptions = async () => {
       //  树加载完后，如果是编辑模式，立即加载详情
       if (editMode.value && currentProductId.value) {
         console.log(' [2] 检测到编辑模式，ID:', currentProductId.value, '开始加载详情...');
-        loadProductDetail(currentProductId.value);
+        loadProductDetail( productType,id);
       } else {
         console.log('[2] 非编辑模式或无 ID，跳过详情加载');
       }
@@ -187,13 +187,13 @@ const getCategoryOptions = async () => {
   }
 };
 
-const loadProductDetail = async (id) => {
+const loadProductDetail = async (productType, id) => {
   loadingDetail.value = true;
   console.log('📥 [3] 请求详情接口 GET /product/detail/', id);
 
   try {
 
-    const res = await getProductDetail(id);
+    const res = await getProductDetail(productType, id);
 
     console.log('📥 [3] 接口返回数据:', res);
 
@@ -232,7 +232,7 @@ const loadProductDetail = async (id) => {
       }
 
       //  特有字段
-      if (data.product_type === 'ROBOT') {
+      if (data.product_type === 'robot') {
         Object.assign(robotFormData, {
           robotName: data.robot_name,
           maxArmSpan: data.max_arm_span,
@@ -249,7 +249,7 @@ const loadProductDetail = async (id) => {
           detailImg: data.detail_img
         });
         console.log('🤖 [4.4] 机器人特有数据已填充');
-      } else if (data.product_type === 'SPORT_CONTROLLER') {
+      } else if (data.product_type === 'sport') {
         const dictToArray = (obj) => {
           if (!obj || typeof obj !== 'object') return [];
           return Object.entries(obj).map(([k, v]) => ({
@@ -385,7 +385,7 @@ const handleSubmit = async () => {
       };
 
       let specificPayload = {};
-      if (currentProductType.value === 'ROBOT') {
+      if (currentProductType.value === 'robot') {
         specificPayload = {
           robot_name: robotFormData.robotName,
           max_arm_span: robotFormData.maxArmSpan,
@@ -401,7 +401,7 @@ const handleSubmit = async () => {
           remark: robotFormData.remark,
           detail_img: robotFormData.detailImg
         };
-      } else if (currentProductType.value === 'SPORT_CONTROLLER') {
+      } else if (currentProductType.value === 'sport') {
         const toDict = (arr) => {
           if (!arr || !Array.isArray(arr)) return null;
           const res = {};
@@ -422,7 +422,7 @@ const handleSubmit = async () => {
 
       const payload = { ...basePayload, ...specificPayload };
 
-      const res = currentProductType.value === 'ROBOT'
+      const res = currentProductType.value === 'robot'
         ? await saveProductRobot(payload)
         : await saveProductsSport(payload);
 
@@ -445,6 +445,7 @@ onMounted(() => {
   console.log('🚀 [0] 当前路由 Query:', route.query);
 
   const id = route.params.id;
+  const productType = route.params.productType;
 
   if (id) {
     editMode.value = true;
@@ -454,7 +455,7 @@ onMounted(() => {
     console.log('ℹ️ [0] 识别为新增模式');
   }
 
-  getCategoryOptions();
+  getCategoryOptions(productType,id);
 });
 </script>
 

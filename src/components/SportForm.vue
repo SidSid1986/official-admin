@@ -20,7 +20,7 @@
         </el-col>
 
         <el-col :span="12">
-          <el-form-item label="产品主图">
+          <el-form-item label="产品详情图">
             <el-upload action="#" :auto-upload="false" :limit="1" :file-list="mainImageList" list-type="picture-card"
               :on-change="handleMainImageChange" :on-remove="handleMainImageRemove" :disabled="uploading">
               <div v-if="uploading" class="uploading-status">

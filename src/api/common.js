@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-16 15:03:38
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-03-31 09:17:13
+ * @LastEditTime: 2026-04-01 14:46:27
  * @FilePath: \admin-demo\src\api\common.js
  * @Description:
  */
@@ -194,7 +194,7 @@ export function saveProductsSport(data) {
   });
 }
 
-export function getProductList(params) {
+export function productList(params) {
   return request({
     url: "api/product/list",
     method: "get",
@@ -210,9 +210,9 @@ export function deleteProduct(id) {
   });
 }
 
-export function getProductDetail(id) {
+export function getProductDetail(robotType,id) {
   return request({
-    url: `api/product/detail/${id}`,
+    url: `api/product/detail/${robotType}/${id}`,
     method: "get",
   });
 }

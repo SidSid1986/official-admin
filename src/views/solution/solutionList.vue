@@ -125,8 +125,8 @@ const fetchList = async () => {
 
     if (res.code === 200) {
       console.log("chadaole");
-      tableData.value = res.data.items;
-      total.value = res.data.total || 0;
+      tableData.value = res.data;
+      total.value = res.total || 0;
     } else {
       ElMessage.error(res.msg || '获取列表失败');
     }

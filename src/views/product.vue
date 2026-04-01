@@ -223,7 +223,7 @@ const handleSubmit = async () => {
           return;
         }
         specificData = { ...robotFormData };
-        productType = 'ROBOT';
+        productType = 'robot';
         
       } else if (selectedSonId.value && sportCategoryIds.includes(selectedSonId.value)) {
         if (!sportFormData.name) {
@@ -232,7 +232,7 @@ const handleSubmit = async () => {
           return;
         }
         specificData = { ...sportFormData };
-        productType = 'SPORT_CONTROLLER';
+        productType = 'sport';
         
       } else if (selectedSonId.value && driverCategoryIds.includes(selectedSonId.value)) {
         ElMessage.info('伺服驱动器表单尚未开发完成');

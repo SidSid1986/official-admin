@@ -117,10 +117,10 @@
         -->
         <el-form-item v-if="form.parent_id === null" label="产品类型" prop="category_type">
           <el-select v-model="form.category_type" placeholder="请选择该产品线类型" style="width: 100%" clearable>
-            <el-option label="🤖 机器人 (ROBOT)" value="ROBOT" />
-            <el-option label="🎮 运动控制器 (SPORT_CONTROLLER)" value="SPORT_CONTROLLER" />
-            <el-option label="⚡ 伺服驱动器 (SERVO_DRIVER)" value="SERVO_DRIVER" />
-            <el-option label="📡 传感器 (SENSOR)" value="SENSOR" />
+            <el-option label="🤖 机器人 (robot)" value="robot" />
+            <el-option label="🎮 运动控制器 (sport)" value="sport" />
+            <el-option label="⚡ 伺服驱动器 (servo)" value="servo" />
+            <el-option label="📡 传感器 (sensor)" value="sensor" />
           </el-select>
           <div class="form-tip">
             <el-icon><Info-Filled /></el-icon>
@@ -230,10 +230,10 @@ const dialogTitle = computed(() => {
 // 辅助函数：获取 Tag 颜色
 const getTypeTag = (type) => {
   const map = {
-    'ROBOT': 'warning',
-    'SPORT_CONTROLLER': 'success',
-    'SERVO_DRIVER': 'info',
-    'SENSOR': 'primary'
+    'robot': 'warning',
+    'sport': 'success',
+    'servo': 'info',
+    'sensor': 'primary'
   };
   return map[type] || '';
 };
