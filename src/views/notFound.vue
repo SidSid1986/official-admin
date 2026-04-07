@@ -1,9 +1,17 @@
+<!--
+ * @Author: Sid Li
+ * @Date: 2026-03-16 15:22:34
+ * @LastEditors: Sid Li
+ * @LastEditTime: 2026-04-07 10:06:55
+ * @FilePath: \admin-demo\src\views\notFound.vue
+ * @Description: 
+-->
 <template>
   <div class="not-found">
     <div class="not-found-content">
       <h1>404</h1>
       <h2>页面没有找到</h2>
-      <router-link to="/register">回到首页</router-link>
+      <router-link to="/">回到首页</router-link>
     </div>
   </div>
 </template>

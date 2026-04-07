@@ -1,6 +1,6 @@
 <template>
   <div class="news-list-container">
-    <!-- === 搜索与新增按钮 === -->
+    <!--  搜索与新增按钮   -->
     <div class="header-actions">
       <el-input v-model="searchKeyword" placeholder="搜索新闻标题..." clearable style="width: 300px"
         @keyup.enter="handleSearch" @clear="handleSearch">
@@ -14,7 +14,7 @@
       <el-button type="primary" :icon="Plus" @click="goToCreate">新增新闻</el-button>
     </div>
 
-    <!-- === 新闻列表表格 === -->
+    <!--  新闻列表表格 -->
     <el-table :data="paginatedData" style="width: 100%; margin-top: 20px;" border stripe v-loading="loading">
       <!-- 标题列 -->
       <el-table-column prop="title" label="新闻标题">
@@ -23,7 +23,7 @@
         </template>
       </el-table-column>
 
-      <!-- 发布日期列 (可选，建议加上) -->
+      <!-- 发布日期列  -->
       <el-table-column prop="date" label="发布日期" align="center" sortable>
         <template #default="scope">
           {{ scope.row.date }}
@@ -52,7 +52,7 @@
       </el-table-column>
     </el-table>
 
-    <!-- === 分页组件 === -->
+    <!--  分页组件  -->
     <div class="pagination-container">
       <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[5, 10, 20, 50]"
         layout="total, sizes, prev, pager, next, jumper" :total="total" @size-change="handleSizeChange"
@@ -124,7 +124,7 @@ const filteredData = computed(() => {
   );
 });
 
-// 第二步：基于过滤后的数据进行分页切片
+//  基于过滤后的数据进行分页切片
 const paginatedData = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
   const end = start + pageSize.value;
@@ -262,7 +262,7 @@ onMounted(() => {
   .pagination-container {
     margin-top: 20px;
     display: flex;
-    justify-content: flex-end; // 靠右对齐
+    justify-content: flex-end;
     background: #fff;
     padding: 15px 0;
     border-radius: 8px;

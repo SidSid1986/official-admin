@@ -5,7 +5,7 @@
     </div>
     <div class="download-content">
 
-      <!-- 1. 文件上传组件 -->
+      <!-- 文件上传组件 -->
       <el-upload class="upload-demo" :action="uploadUrl" :headers="uploadHeaders" :auto-upload="true"
         :show-file-list="false" :file-list="fileList" :on-success="handleUploadSuccess" :on-error="handleUploadError"
         :before-upload="beforeUpload" list-type="text">
@@ -16,7 +16,7 @@
         </el-button>
       </el-upload>
 
-      <!-- 2. 文件列表展示 -->
+      <!--  文件列表展示 -->
       <div class="file-list-container" v-if="total > 0 || loading">
         <div class="file-list-title">已上传文件列表</div>
 
@@ -90,17 +90,17 @@ import { fileListApi, deleteFile } from '@/api/common.js';
 const uploadUrl = `api/files/upload`;
 const uploadHeaders = {};
 
-// --- 数据状态 ---
+// 数据状态
 const fileList = ref([]);
 const loading = ref(false);
 
-// --- 分页状态 ---
+// 分页状态 
 const currentPage = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
 const keyword = ref('');
 
-// --- 方法：获取文件列表 ---
+// 获取文件列表 
 const fetchFileList = async (currentPage, pageSize) => {
   loading.value = true;
 
@@ -138,7 +138,7 @@ const fetchFileList = async (currentPage, pageSize) => {
 }
 
 
-// --- 分页事件处理 ---
+//  分页事件处理  
 const handleSizeChange = (val) => {
   pageSize.value = val;
   currentPage.value = 1; // 改变每页数量时，重置到第一页
@@ -150,7 +150,7 @@ const handleCurrentChange = (val) => {
   fetchFileList(currentPage.value, pageSize.value);
 };
 
-// --- 上传前校验 ---
+//  上传前校验  
 const beforeUpload = (file) => {
   const maxSize = 5 * 1024 * 1024;
   const allowedExts = ['doc', 'docx', 'pdf', 'zip', 'rar'];
@@ -167,7 +167,7 @@ const beforeUpload = (file) => {
   return true;
 };
 
-// --- 上传成功回调 ---
+//  上传成功回调  
 const handleUploadSuccess = (response, file, uploadFiles) => {
   if (response.code === 200) {
     ElMessage.success('上传成功');
@@ -183,7 +183,7 @@ const handleUploadError = () => {
   ElMessage.error('上传失败，请检查网络或服务器状态');
 };
 
-// --- 删除文件 ---
+//  删除文件 
 const handleDelete = async (fileItem) => {
   try {
     await ElMessageBox.confirm(`确定要删除文件 "${fileItem.name}" 吗？`, '删除确认', { type: 'warning' });
@@ -197,13 +197,12 @@ const handleDelete = async (fileItem) => {
     if (res.code === 200) {
       ElMessage.success('删除成功');
 
-      // 逻辑优化：如果删除后当前页没有数据了，且不是第一页，则自动跳转到上一页
+      //  如果删除后当前页没有数据了，且不是第一页，则自动跳转到上一页
       if (fileList.value.length === 1 && currentPage.value > 1) {
         currentPage.value -= 1;
         fetchFileList(currentPage.value, pageSize.value);
       } else {
-        // 否则只刷新当前页（或者重新拉取列表，这里简单起见重新拉取）
-        // 注意：直接 filter 本地列表会导致 total 不准，所以最好重新请求
+
         fetchFileList(currentPage.value, pageSize.value);
       }
     } else {
@@ -216,7 +215,7 @@ const handleDelete = async (fileItem) => {
   }
 };
 
-// --- 下载文件 ---
+// 下载文件 
 const handleDownload = async (fileItem) => {
   if (fileItem.downloading) return;
 
@@ -243,7 +242,7 @@ const handleDownload = async (fileItem) => {
   }
 };
 
-// --- 工具函数 ---
+// 工具函数  
 const formatFileSize = (bytes) => {
   if (!bytes) return '0 B';
   const k = 1024;
@@ -298,7 +297,6 @@ onMounted(() => {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
-  /* 分页靠右 */
 }
 
 .file-icon {

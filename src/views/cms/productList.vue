@@ -1,6 +1,6 @@
 <template>
   <div class="product-list-container">
-    <!-- === 1. 顶部搜索与操作栏 === -->
+    <!-- 顶部搜索与操作栏 -->
     <el-card class="search-card" shadow="hover">
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="产品名称">
@@ -30,7 +30,7 @@
       </el-form>
     </el-card>
 
-    <!-- === 2. 数据表格 === -->
+    <!-- 数据表格 -->
     <el-card class="table-card" shadow="never">
       <el-table :data="tableData" height="50vh" style="width: 100%" v-loading="loading" border stripe
         header-cell-class-name="table-header-gray">
@@ -76,6 +76,15 @@
           </template>
         </el-table-column>
 
+
+        <el-table-column prop="ifMain" label="是否放置首页" width="120" align="center">
+          <template #default="scope">
+            <el-tag :type="scope.row.ifMain === true ? 'success' : 'danger'" size="small" effect="dark">
+              {{ scope.row.ifMain === true ? '是' : '否' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+
         <el-table-column prop="createTime" label="创建时间" width="160" sortable>
           <template #default="scope">
             {{ formatDate(scope.row.createTime) }}
@@ -91,7 +100,7 @@
         </el-table-column>
       </el-table>
 
-      <!-- === 3. 分页器 === -->
+      <!-- 分页器 -->
       <div class="pagination-container">
         <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]"
           layout="total, sizes, prev, pager, next, jumper" :total="total" @size-change="handleSizeChange"
@@ -126,12 +135,11 @@ const searchForm = reactive({
   childId: null    // 传递给后端的子级ID
 });
 
-// 分类选项 (用于 Cascader)
+// 分类选项 
 const categoryOptions = ref([]);
 
-// --- 方法 ---
 
-// 1. 加载分类树 (初始化搜索框)
+// 加载分类树 (初始化搜索框)
 const fetchCategories = async () => {
   try {
     const res = await categoryTree();
@@ -140,7 +148,7 @@ const fetchCategories = async () => {
       const transform = (nodes) => {
         return nodes.map(node => ({
           value: node.id,
-          label: node.label, // 或者 node.type_name 如果想显示类型
+          label: node.label, //  node.type_name 显示类型
           children: node.children ? transform(node.children) : []
         }));
       };
@@ -151,7 +159,7 @@ const fetchCategories = async () => {
   }
 };
 
-// 2. 加载产品数据
+// 加载产品数据
 const fetchData = async () => {
   loading.value = true;
   try {
@@ -272,7 +280,7 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-/* 样式保持与你提供的代码一致，略 */
+
 .product-list-container {
   padding: 20px;
   background-color: #f5f7fa;

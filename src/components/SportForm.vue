@@ -4,7 +4,7 @@
 
     <el-form :model="formData" label-width="140px" size="default">
 
-      <!-- 第一部分：核心基础信息 -->
+      <!--  核心基础信息 -->
       <el-row :gutter="20">
         <el-col :span="24">
           <el-form-item label="产品型号名称" prop="name">
@@ -35,19 +35,19 @@
             </el-upload>
 
             <div class="upload-tip" v-if="formData.img">
-              ✅ 图片已上传成功<br>
+               图片已上传成功<br>
               地址：<span class="url-text">{{ formData.img }}</span>
             </div>
             <div class="upload-tip" v-else-if="uploading">
-              ⏳ 正在上传，请稍候...
+              正在上传，请稍候...
             </div>
           </el-form-item>
         </el-col>
       </el-row>
 
-      <el-divider content-position="left">✨ 核心卖点 (Line Info)</el-divider>
+      <el-divider content-position="left">核心卖点 (Line Info)</el-divider>
 
-      <!-- 第二部分：三大卖点 -->
+      <!--  三大卖点 -->
       <el-row :gutter="20">
         <el-col :span="8">
           <el-form-item label="卖点1标题">
@@ -77,7 +77,7 @@
 
       <el-divider content-position="left">🔌 配件列表 (Sport Pram)</el-divider>
 
-      <!-- 第三部分：配件列表 (动态表格) -->
+      <!--  配件列表 动态表格-->
       <el-row :gutter="20">
         <el-col :span="24">
           <div class="dynamic-table-container">
@@ -106,7 +106,7 @@
 
       <el-divider content-position="left">⚙️ 轴配置选项 (Sport Pram Two)</el-divider>
 
-      <!-- 第四部分：轴配置 (动态表格) -->
+      <!--  轴配置 动态表格-->
       <el-row :gutter="20">
         <el-col :span="24">
           <div class="dynamic-table-container">
@@ -141,7 +141,7 @@
 import { reactive, ref, watch } from 'vue';
 import { Plus, Loading } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-// ✅ 引入上传 API
+ 
 import { uploadImageCommon } from '@/api/common';
 
 const emit = defineEmits(['update:modelValue']);
@@ -178,9 +178,7 @@ const formData = reactive({
   ]
 });
 
-/**
- * 处理文件选择变化 - 核心修改
- */
+//处理文件选择变化
 const handleMainImageChange = async (uploadFile) => {
   const rawFile = uploadFile.raw;
 
@@ -205,13 +203,13 @@ const handleMainImageChange = async (uploadFile) => {
     fd.append('module', 'product');
 
     // 4. 调用上传接口
-    console.log('🚀 开始上传控制器主图...');
+    console.log('开始上传控制器主图...');
     const res = await uploadImageCommon(fd);
 
     if (res.code === 200 && res.data && res.data.url) {
       const realUrl = res.data.url;
 
-      // 5. 更新数据
+   
       formData.img = realUrl;
 
       // 更新 fileList 中的 url，确保 el-upload 能正确显示回显
@@ -221,7 +219,7 @@ const handleMainImageChange = async (uploadFile) => {
       }];
 
       ElMessage.success('图片上传成功');
-      console.log('✅ 图片上传完成，URL:', realUrl);
+      console.log('  图片上传完成，URL:', realUrl);
     } else {
       throw new Error(res.msg || '上传失败');
     }
@@ -242,7 +240,7 @@ const handleMainImageRemove = () => {
   formData.img = '';
 };
 
-// --- 表格操作逻辑 ---
+//表格操作逻辑
 const addPram = () => {
   const newId = formData.sportPram.length > 0 ? Math.max(...formData.sportPram.map(i => i.id)) + 1 : 1;
   formData.sportPram.push({ id: newId, lineName: '', lineValue: '' });
@@ -261,7 +259,7 @@ const removePramTwo = (index) => {
   formData.sportPramTwo.splice(index, 1);
 };
 
-// --- 双向绑定同步 ---
+//双向绑定同步
 watch(formData, (newVal) => {
   const dataToSend = JSON.parse(JSON.stringify(newVal));
   emit('update:modelValue', dataToSend);

@@ -1,7 +1,7 @@
 <template>
   <div class="category-container">
     <el-card shadow="never">
-      <!-- === 1. 顶部操作栏 === -->
+      <!--  顶部操作栏   -->
       <div class="header-actions">
         <h2 class="page-title">📂 产品分类管理</h2>
         <div>
@@ -12,12 +12,12 @@
         </div>
       </div>
 
-      <!-- === 2. 树形表格 === -->
+      <!--  树形表格  -->
       <el-table :data="tableData" style="width: 100%; margin-top: 20px" row-key="id" border default-expand-all
         :tree-props="{ children: 'children', hasChildren: 'hasChildren' }" v-loading="loading">
         <el-table-column prop="label" label="分类名称" min-width="200">
           <template #default="scope">
-            <!-- 注意：行内编辑仅允许修改名称，修改类型请走弹窗编辑 -->
+            <!--  行内编辑仅允许修改名称，修改类型弹窗编辑 -->
             <div v-if="scope.row.isEditing" class="edit-input-wrapper">
               <el-input v-model="scope.row.tempLabel" size="small" placeholder="输入分类名"
                 @keyup.enter="handleSaveEdit(scope.row)" @blur="handleSaveEdit(scope.row)" />
@@ -26,7 +26,7 @@
           </template>
         </el-table-column>
 
-        <!-- === 产品类型列 === -->
+        <!-- 产品类型列  -->
         <el-table-column prop="category_type" label="产品类型" width="180" align="center">
           <template #default="scope">
             <el-tag v-if="!scope.row.parentId" :type="getTypeTag(scope.row.category_type)" effect="plain"
@@ -60,7 +60,7 @@
 
         <el-table-column label="操作" width="400" fixed="right" align="center">
           <template #default="scope">
-            <!-- 编辑/保存 (名称) -->
+            <!-- 编辑/保存  -->
             <el-button v-if="!scope.row.isEditing" type="primary" link :icon="Edit" @click="handleEdit(scope.row)">
               改名
             </el-button>
@@ -71,7 +71,7 @@
 
             <el-divider direction="vertical" />
 
-            <!--  弹窗进行详细编辑  -->
+            <!--  弹窗编辑  -->
             <el-button type="warning" link :icon="Setting" @click="openDialog('edit', scope.row)">
               详情/改型
             </el-button>
@@ -95,12 +95,12 @@
       </el-table>
     </el-card>
 
-    <!-- 新增/编辑 对话框  -->
+    <!-- 新增编辑dialog  -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px" @close="resetForm"
       :close-on-click-modal="false">
       <el-form :model="form" label-width="110px" :rules="rules" ref="formRef">
 
-        <!--  编辑模式且是一级分类 -->
+        <!--  编辑模式 一级分类 -->
         <el-alert v-if="operateType === 'edit' && form.parent_id === null" title="正在编辑一级分类" type="info" show-icon
           :closable="false" style="margin-bottom: 15px;">
           您可以在此修改分类名称、<strong>产品类型</strong> 及其他属性。
@@ -118,9 +118,9 @@
         <el-form-item v-if="form.parent_id === null" label="产品类型" prop="category_type">
           <el-select v-model="form.category_type" placeholder="请选择该产品线类型" style="width: 100%" clearable>
             <el-option label="🤖 机器人 (robot)" value="robot" />
-            <el-option label="🎮 运动控制器 (sport)" value="sport" />
-            <el-option label="⚡ 伺服驱动器 (servo)" value="servo" />
-            <el-option label="📡 传感器 (sensor)" value="sensor" />
+            <el-option label="运动控制器 (sport)" value="sport" />
+            <el-option label="伺服驱动器 (servo)" value="servo" />
+            <el-option label="传感器 (sensor)" value="sensor" />
           </el-select>
           <div class="form-tip">
             <el-icon><Info-Filled /></el-icon>
@@ -192,7 +192,7 @@ const rules = {
       message: '一级分类必须指定产品类型',
       trigger: 'change',
       validator: (rule, value, callback) => {
-        // 只要是一级分类 (parent_id === null)，无论是新增还是编辑，都必须有类型
+        // 只要是一级分类 (parent_id === null)，新增编辑，都必须有类型
         if (form.parent_id === null && !value) {
           callback(new Error('请选择产品类型'));
         } else {
@@ -203,7 +203,7 @@ const rules = {
   ]
 };
 
-// 计算属性：显示父级名称
+// 显示父级名称
 const parentCategoryName = computed(() => {
   if (!form.parent_id) return '无';
   const findNode = (nodes, id) => {
@@ -227,7 +227,7 @@ const dialogTitle = computed(() => {
   }
 });
 
-// 辅助函数：获取 Tag 颜色
+//  获取 Tag 颜色
 const getTypeTag = (type) => {
   const map = {
     'robot': 'warning',
@@ -239,7 +239,6 @@ const getTypeTag = (type) => {
 };
 
 //  数据获取  
-
 const fetchData = async () => {
   loading.value = true;
   try {
@@ -267,11 +266,7 @@ const addUiFields = (nodes) => {
   }));
 };
 
-/**
- * 打开对话框 (统一入口)
- * @param {string} type - 'add' 或 'edit'
- * @param {object} row - 当前行数据 (新增子级时传父级，编辑时传自身)
- */
+//打开对话框
 const openDialog = (type, row) => {
   operateType.value = type;
 
@@ -306,7 +301,7 @@ const openDialog = (type, row) => {
   dialogVisible.value = true;
 };
 
-// === 提交表单 ===
+// 提交表单 
 const submitForm = async () => {
   if (!formRef.value) return;
 
@@ -343,7 +338,7 @@ const resetForm = () => {
   if (formRef.value) formRef.value.resetFields();
 };
 
-// === 行内快速改名 (仅改名，不改类型) ===
+// 行内改名
 const handleEdit = (row) => {
   row.tempLabel = row.label;
   row.isEditing = true;

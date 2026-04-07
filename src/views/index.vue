@@ -118,7 +118,7 @@
 
         <el-breadcrumb class="content-breadcrumb" separator="/">
           <el-breadcrumb-item v-for="(item, index) in currentBreadcrumb" :key="index" :to="getBreadcrumbPath(index)">
-            <!-- 直接读取 item.title -->
+
             {{ item.title }}
           </el-breadcrumb-item>
         </el-breadcrumb>

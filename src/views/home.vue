@@ -1,18 +1,18 @@
 <template>
   <div class="home-config-container">
-    <!-- ... 头部代码不变 ... -->
+
     <div class="page-header">
       <h2>🖼️ 首页图片配置</h2>
       <p class="sub-title">管理首页轮播图、行业展示图及底部品牌图</p>
     </div>
 
-    <!-- === 板块 1: 首页轮播图 (type=banner) === -->
+    <!--  首页轮播图 (type=banner)  -->
     <el-card class="config-card" shadow="hover">
       <template #header>
         <div class="card-header">
           <span class="title-icon">🎡</span>
           <span>首页轮播图管理</span>
-          <el-tag type="info" size="small">建议比例 1920x600</el-tag>
+          <!-- <el-tag type="info" size="small">建议比例 1920x600</el-tag> -->
         </div>
       </template>
 
@@ -27,21 +27,30 @@
       </div>
     </el-card>
 
-    <!-- === 板块 2: 行业图片 (type=core) === -->
+    <!--  行业图片 (type=core)  -->
     <el-card class="config-card" shadow="hover">
       <template #header>
         <div class="card-header">
           <span class="title-icon">🏭</span>
           <span>核心行业展示图</span>
-          <el-tag type="warning" size="small" effect="dark">最多 3 张</el-tag>
+          <!-- <el-tag type="warning" size="small" effect="dark">最多 3 张</el-tag> -->
         </div>
       </template>
 
       <div class="upload-section">
-        <el-upload v-model:file-list="fileList2" :action="uploadUrl" :headers="uploadHeaders"
+        <!-- <el-upload v-model:file-list="fileList2" :action="uploadUrl" :headers="uploadHeaders"
           :data="{ img_type: 'core' }" :class="fileList2.length >= 3 ? 'img-uploader-has-file' : ''"
           list-type="picture-card" :on-success="handleUploadSuccess" :on-error="handleUploadError"
           :on-preview="handlePictureCardPreview2" :on-remove="handleRemove2" :limit="3" :on-exceed="handleExceed">
+          <el-icon class="uploader-icon">
+            <Plus />
+          </el-icon>
+        </el-upload> -->
+
+        <el-upload v-model:file-list="fileList2" :action="uploadUrl" :headers="uploadHeaders"
+          :data="{ img_type: 'core' }" list-type="picture-card" :on-success="handleUploadSuccess"
+          :on-error="handleUploadError" :on-preview="handlePictureCardPreview2" :on-remove="handleRemove2"
+          :on-exceed="handleExceed">
           <el-icon class="uploader-icon">
             <Plus />
           </el-icon>
@@ -50,7 +59,7 @@
       </div>
     </el-card>
 
-    <!-- === 板块 3: 底部图片 (type=footer) === -->
+    <!--  底部图片 (type=footer) -->
     <el-card class="config-card" shadow="hover">
       <template #header>
         <div class="card-header">
@@ -87,14 +96,9 @@
 import { ref, onMounted } from 'vue';
 import { Plus } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-
 import { homeImage, deleteImage } from '@/api/common.js';
 
-
-
 const uploadUrl = "/api/home/upload_image";
-
-
 const token = localStorage.getItem('token');
 const uploadHeaders = token ? { 'Authorization': `Bearer ${token}` } : {};
 
@@ -135,7 +139,7 @@ const handleUploadError = (err) => {
 const getFullUrl = (path) => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
-  return path; // 直接返回，Vite 会自动代理到后端
+  return path;
 };
 
 //  通用处理方法  
@@ -172,8 +176,9 @@ const handlePictureCardPreview3 = (uploadFile) => {
 };
 
 const handleExceed = (files, fileList) => {
-  const limit = fileList[0]?.length >= 3 ? 3 : 1;
-  ElMessage.warning(`当前模块已达到最大上传数量限制 (${limit} 张)`);
+  console.log(files);
+  // const limit = fileList[0]?.length >= 3 ? 3 : 1;
+  // ElMessage.warning(`当前模块已达到最大上传数量限制 (${limit} 张)`);
 };
 
 // 图片列表
@@ -230,7 +235,7 @@ onMounted(() => {
 });
 </script>
 
-<!-- style 部分保持不变 -->
+
 <style scoped lang="scss">
 .home-config-container {
   padding: 20px;

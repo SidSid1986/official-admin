@@ -13,10 +13,10 @@
     </div>
 
     <el-card class="form-card">
-      <!-- 添加 v-loading 防止数据未加载完时表单闪烁 -->
+
       <el-form ref="formRef" :model="formData" :rules="rules" label-width="140px" v-loading="loadingDetail">
 
-        <!-- === 通用区域 === -->
+        <!-- 通用区域 -->
         <el-divider content-position="left">📦 通用基础信息</el-divider>
         <el-row :gutter="20">
           <el-col :span="12">
@@ -46,10 +46,10 @@
                 </el-icon>
               </el-upload>
               <div class="upload-tip" v-if="formData.mainImageUrl && !formData.mainImageUrl.startsWith('blob')">
-                ✅ 图片已就绪 (旧图)
+                图片已就绪 (旧图)
               </div>
               <div class="upload-tip" v-else-if="formData.mainImageUrl && formData.mainImageUrl.startsWith('blob')">
-                ⚠️ 注意：提交时将自动上传新图
+                注意：提交时将自动上传新图
               </div>
             </el-form-item>
           </el-col>
@@ -61,9 +61,18 @@
 
             </el-form-item>
           </el-col>
+
+          <el-col :span="12">
+            <el-form-item label="是否放置首页" prop="ifMain">
+              <el-radio-group v-model="formData.ifMain" @change="handleIfMainChange">
+                <el-radio :label="1">是</el-radio>
+                <el-radio :label="0">否</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
         </el-row>
 
-        <!-- === 动态区域 (关键：只有 currentProductType 有值才会显示) === -->
+        <!-- 动态区域  currentProductType 有值 显示) -->
         <div v-if="currentProductType === 'robot'">
           <el-divider content-position="left">🤖 机器人特有参数</el-divider>
           <RobotForm v-model="robotFormData" />
@@ -74,7 +83,7 @@
           <SportForm v-model="sportFormData" />
         </div>
 
-        <!-- 提示语 -->
+        <!-- 提示 -->
         <div v-if="!currentProductType && editMode && loadingDetail">
           <el-alert title="正在加载产品详情..." type="info" :closable="false" show-icon />
         </div>
@@ -126,6 +135,7 @@ const formData = reactive({
   modelNumber: '',
   mainImageUrl: '',
   robotType: '',
+  ifMain: 0,
 });
 
 const robotFormData = reactive({});
@@ -174,7 +184,7 @@ const getCategoryOptions = async (productType, id) => {
       //  树加载完后，如果是编辑模式，立即加载详情
       if (editMode.value && currentProductId.value) {
         console.log(' [2] 检测到编辑模式，ID:', currentProductId.value, '开始加载详情...');
-        loadProductDetail( productType,id);
+        loadProductDetail(productType, id);
       } else {
         console.log('[2] 非编辑模式或无 ID，跳过详情加载');
       }
@@ -189,24 +199,25 @@ const getCategoryOptions = async (productType, id) => {
 
 const loadProductDetail = async (productType, id) => {
   loadingDetail.value = true;
-  console.log('📥 [3] 请求详情接口 GET /product/detail/', id);
+  console.log('[3] 请求详情接口 GET /product/detail/', id);
 
   try {
 
     const res = await getProductDetail(productType, id);
 
-    console.log('📥 [3] 接口返回数据:', res);
+    console.log(' [3] 接口返回数据:', res);
 
     if (res.code === 200 && res.data) {
       const data = res.data;
-      console.log('✅ [4] 开始填充表单数据...');
+      console.log(' [4] 开始填充表单数据...');
 
-      // 1. 填充通用字段
+      //  填充通用字段
       formData.productName = data.product_name;
       formData.modelNumber = data.model_number;
       formData.mainImageUrl = data.main_image_url || '';
+      formData.ifMain = data.if_main || '';
 
-      console.log('📝 [4.1] 通用字段填充后:', {
+      console.log(' [4.1] 通用字段填充后:', {
         name: formData.productName,
         model: formData.modelNumber,
         img: formData.mainImageUrl
@@ -215,10 +226,10 @@ const loadProductDetail = async (productType, id) => {
       // 图片回显
       if (formData.mainImageUrl) {
         mainImageList.value = [{ name: 'img', url: formData.mainImageUrl }];
-        console.log('🖼️ [4.2] 图片列表已更新');
+        console.log('[4.2] 图片列表已更新');
       }
 
-      // 2. 处理级联选择器  
+      //   处理级联选择器  
       const path = findCategoryPath(categoryOptions.value, data.category_id);
       console.log('  [4.3] 查找分类路径结果:', path, '目标 ID:', data.category_id);
 
@@ -248,7 +259,7 @@ const loadProductDetail = async (productType, id) => {
           remark: data.remark,
           detailImg: data.detail_img
         });
-        console.log('🤖 [4.4] 机器人特有数据已填充');
+        console.log(' [4.4] 机器人特有数据已填充');
       } else if (data.product_type === 'sport') {
         const dictToArray = (obj) => {
           if (!obj || typeof obj !== 'object') return [];
@@ -266,7 +277,7 @@ const loadProductDetail = async (productType, id) => {
           sportPram: dictToArray(data.sport_pram),
           sportPramTwo: dictToArray(data.sport_pram_two)
         });
-        console.log('🎮 [4.4] 控制器特有数据已填充');
+        console.log(' [4.4] 控制器特有数据已填充');
       }
 
       ElMessage.success('产品信息加载完成');
@@ -282,7 +293,7 @@ const loadProductDetail = async (productType, id) => {
   }
 };
 
-// 找到并替换这个函数
+
 const handleCategoryChange = (val, isInit = false) => {
   if (!val || val.length === 0) {
     currentProductType.value = '';
@@ -291,14 +302,14 @@ const handleCategoryChange = (val, isInit = false) => {
   }
 
   //  获取最后一级分类的 ID
-  const selectedCategoryId = val[val.length - 1]; 
+  const selectedCategoryId = val[val.length - 1];
 
   //  根据 ID 查找对应的分类对象，从而获取其名称
   // 定义一个递归查找函数
   function findCategoryName(categories, targetId) {
     for (let cat of categories) {
       if (cat.value === targetId) {
-        return cat.label; // 找到后返回其 label (即名称)
+        return cat.label; // 找到后返回其 label 
       }
       if (cat.children && cat.children.length > 0) {
         const foundName = findCategoryName(cat.children, targetId);
@@ -308,21 +319,21 @@ const handleCategoryChange = (val, isInit = false) => {
     return null; // 没找到则返回 null
   }
 
-  // 3. 执行查找并赋值
+  //   执行查找并赋值
   const categoryName = findCategoryName(categoryOptions.value, selectedCategoryId);
   if (categoryName) {
     formData.robotType = categoryName;
-    console.log(`🔄 [5] 分类变化: "${categoryName}" -> formData.robotType`);
+    console.log(`[5] 分类变化: "${categoryName}" -> formData.robotType`);
   } else {
-    // 如果找不到（理论上不应该发生），则清空
+
     formData.robotType = '';
-    console.warn('⚠️ 未能根据ID找到对应的分类名称:', selectedCategoryId);
+    console.warn('未能根据ID找到对应的分类名称:', selectedCategoryId);
   }
 
-  // 4. 保留原有的产品类型判断逻辑
+
   const type = productTypeMap.get(selectedCategoryId);
   currentProductType.value = type || '';
-  console.log('🔄 [5] 分类变化触发，当前类型:', currentProductType.value);
+  console.log(' [5] 分类变化触发，当前类型:', currentProductType.value);
 };
 const handleMainImageChange = (uploadFile) => {
   mainImageList.value = [uploadFile];
@@ -382,6 +393,7 @@ const handleSubmit = async () => {
         main_image_url: finalImageUrl,
         category_id: formData.category[1],
         is_active: true,
+        if_main: formData.ifMain,
       };
 
       let specificPayload = {};
@@ -441,8 +453,8 @@ const handleSubmit = async () => {
   });
 };
 onMounted(() => {
-  console.log('🚀 [0] 组件挂载，当前路由 Params:', route.params);
-  console.log('🚀 [0] 当前路由 Query:', route.query);
+  console.log(' [0] 组件挂载，当前路由 Params:', route.params);
+  console.log(' [0] 当前路由 Query:', route.query);
 
   const id = route.params.id;
   const productType = route.params.productType;
@@ -450,12 +462,12 @@ onMounted(() => {
   if (id) {
     editMode.value = true;
     currentProductId.value = parseInt(id);
-    console.log('✅ [0] 识别为编辑模式，ID:', currentProductId.value);
+    console.log(' [0] 识别为编辑模式，ID:', currentProductId.value);
   } else {
-    console.log('ℹ️ [0] 识别为新增模式');
+    console.log(' [0] 识别为新增模式');
   }
 
-  getCategoryOptions(productType,id);
+  getCategoryOptions(productType, id);
 });
 </script>
 

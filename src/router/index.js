@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-16 15:03:38
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-04-01 14:57:50
+ * @LastEditTime: 2026-04-07 10:05:02
  * @FilePath: \admin-demo\src\router\index.js
  * @Description:
  */
@@ -75,7 +75,7 @@ const routes = [
         },
       },
 
-      // --- 产品管理 ---
+      // 产品管理
       {
         path: "cms/productList",
         name: "ProductList",
@@ -113,7 +113,7 @@ const routes = [
         },
       },
 
-      // --- 解决方案 ---
+      //  解决方案
       {
         path: "solution/solutionList",
         name: "SolutionList",
@@ -149,6 +149,18 @@ const routes = [
         },
       },
     ],
+  },
+
+  {
+    path: "/login",
+    name: "Login",
+    component: () => import("@/views/login.vue"),
+    meta: { requiresAuth: false },
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
+    component: () => import("@/views/notFound.vue"),
   },
 ];
 

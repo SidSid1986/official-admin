@@ -5,14 +5,14 @@
     <el-form :model="formData" label-width="140px" size="default">
       <el-row :gutter="20">
 
-        <!-- 第一行：型号 -->
+        <!-- 型号 -->
         <el-col :span="24">
           <el-form-item label="产品型号" prop="robotName">
             <el-input v-model="formData.robotName" placeholder="例如：IER50-1200-SR" style="font-weight: bold;" />
           </el-form-item>
         </el-col>
 
-        <!-- 第二行：核心四大参数 -->
+        <!-- 核心参数 -->
         <el-col :span="6">
           <el-form-item label="最大臂展">
             <el-input v-model="formData.maxArmSpan" placeholder="例如：1200MM" />
@@ -34,7 +34,7 @@
           </el-form-item>
         </el-col>
 
-        <!-- 第三行：精度与防护 -->
+        <!--  精度与防护 -->
         <el-col :span="12">
           <el-form-item label="重复定位精度">
             <el-input v-model="formData.perprecision" type="textarea" :rows="2" placeholder="例如：J1+J2:±0.025mm..." />
@@ -42,7 +42,7 @@
         </el-col>
         <el-col :span="6">
           <el-form-item label="防护等级">
-            <!-- 注意：这里保持 IP 字段名，确保与父组件映射一致 (ip_level -> IP) -->
+   
             <el-input v-model="formData.IP" placeholder="例如：IP54" />
           </el-form-item>
         </el-col>
@@ -52,7 +52,7 @@
           </el-form-item>
         </el-col>
 
-        <!-- 第四行：驱动与认证 -->
+        <!--  驱动与认证 -->
         <el-col :span="12">
           <el-form-item label="驱动方式">
             <el-input v-model="formData.driveType" placeholder="例如：AC伺服电机驱动" />
@@ -64,21 +64,21 @@
           </el-form-item>
         </el-col>
 
-        <!-- 第五行：安装条件 -->
+        <!--  安装条件 -->
         <el-col :span="24">
           <el-form-item label="安装条件">
             <el-input v-model="formData.insRequire" type="textarea" :rows="6" placeholder="请输入温度、湿度等详细信息..." />
           </el-form-item>
         </el-col>
 
-        <!-- 第六行：备注 -->
+        <!--  备注 -->
         <el-col :span="24">
           <el-form-item label="备注说明">
             <el-input v-model="formData.remark" type="textarea" :rows="2" placeholder="其他补充信息" />
           </el-form-item>
         </el-col>
 
-        <!-- 第七行：图片上传 (已修改为真实上传逻辑) -->
+        <!--  图片上传  -->
         <el-col :span="24">
           <el-form-item label="产品详情图片">
             <el-upload action="#" :auto-upload="false" :limit="1" :file-list="fileList" list-type="picture-card"
@@ -96,7 +96,7 @@
 
             <div class="uploader-tip">
               <span v-if="formData.detailImg">
-                ✅ 图片已上传成功<br>
+                 图片已上传成功<br>
                 地址：<b>{{ formData.detailImg }}</b>
               </span>
               <span v-else-if="uploading">
@@ -140,7 +140,7 @@ const formData = reactive({
   maxArmSpan: '',
   perprecision: '',
   weight: '',
-  IP: '',       // 对应后端的 ip_level
+  IP: '',      
   insType: '',
   driveType: '',
   insRequire: '',
@@ -149,15 +149,13 @@ const formData = reactive({
   detailImg: '' // 存储后端返回的真实 URL
 });
 
-/**
- * 处理文件选择变化 - 核心修改
- */
+  //处理文件选择 
 const handleFileChange = async (uploadFile) => {
   const rawFile = uploadFile.raw;
 
   if (!rawFile) return;
 
-  // 1. 基础校验
+  //  基础校验
   if (!rawFile.type.startsWith('image/')) {
     ElMessage.error('只能上传图片文件！');
     fileList.value = [];
@@ -165,24 +163,24 @@ const handleFileChange = async (uploadFile) => {
     return;
   }
 
-  // 2. 锁定状态
+  //  锁定状态
   uploading.value = true;
   fileList.value = [uploadFile]; // 先显示本地预览
 
   try {
-    // 3. 构建 FormData
+    //  构建 FormData
     const fd = new FormData();
     fd.append('file', rawFile);
-    fd.append('module', 'product'); // 根据后端要求添加 module 参数
+    fd.append('module', 'product'); //  添加 module 参数
 
-    // 4. 调用上传接口
-    console.log('🚀 开始上传详情图片...');
+    //  上传接口
+    console.log(' 开始上传详情图片...');
     const res = await uploadImageCommon(fd);
 
     if (res.code === 200 && res.data && res.data.url) {
       const realUrl = res.data.url;
 
-      // 5. 更新数据
+      // 更新数据
       formData.detailImg = realUrl;
 
       // 更新 fileList 中的 url，确保 el-upload 能正确显示回显
@@ -192,7 +190,7 @@ const handleFileChange = async (uploadFile) => {
       }];
 
       ElMessage.success('图片上传成功');
-      console.log('✅ 图片上传完成，URL:', realUrl);
+      console.log('  图片上传完成，URL:', realUrl);
     } else {
       throw new Error(res.msg || '上传失败');
     }
@@ -207,17 +205,14 @@ const handleFileChange = async (uploadFile) => {
     uploading.value = false;
   }
 };
-
-/**
- * 处理文件删除
- */
+//处理文件删除
 const handleRemove = () => {
   fileList.value = [];
   formData.detailImg = '';
   console.log('图片已移除');
 };
 
-// 监听本地变化，同步给父组件
+ 
 watch(formData, (newVal) => {
   emit('update:modelValue', { ...newVal });
 }, { deep: true });
@@ -228,7 +223,7 @@ watch(() => props.modelValue, (newVal) => {
     // 合并数据
     Object.assign(formData, newVal);
 
-    // 如果有图片地址，还原 fileList 用于展示
+    // 如果有图片地址， fileList 用于展示
     if (formData.detailImg) {
       fileList.value = [{
         name: 'detail-image.png',

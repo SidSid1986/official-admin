@@ -1,6 +1,6 @@
 <template>
   <div class="solution-container">
-    <!-- === 1. 搜索与操作栏 === -->
+    <!--  搜索与操作栏 -->
     <el-card class="search-card" shadow="hover">
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="方案名称">
@@ -12,7 +12,7 @@
           <el-select v-model="searchForm.fid" placeholder="请选择行业" clearable style="width: 240px" @change="handleSearch">
             <el-option v-for="item in industryOptions" :key="item.id" :label="item.name" :value="item.id" />
           </el-select>
-          <!-- 如果未来行业也有层级，可换回 el-cascader，目前看是平级行业 -->
+
         </el-form-item>
 
         <el-form-item>
@@ -27,11 +27,11 @@
       </div>
     </el-card>
 
-    <!-- === 2. 数据表格 === -->
+    <!--  数据表格   -->
     <el-card class="table-card" shadow="never">
       <el-table :data="tableData" style="width: 100%" v-loading="loading" border stripe
         header-cell-class-name="table-header-gray">
-        <!-- 方案名称 (点击可编辑) -->
+        <!-- 方案名称 点击可编辑 -->
         <el-table-column label="方案名称" min-width="250">
           <template #default="scope">
             <span class="edit-link" @click="handleEdit(scope.row)" title="点击编辑">
@@ -49,7 +49,7 @@
           </template>
         </el-table-column>
 
-        <!-- 创建/更新时间 (模拟) -->
+        <!-- 创建/更新时间   -->
         <el-table-column label="更新时间" width="180" sortable>
           <template #default="scope">
             {{ scope.row.update_time || '刚刚' }}
@@ -70,7 +70,7 @@
         </el-table-column>
       </el-table>
 
-      <!-- === 3. 分页器 === -->
+      <!--   分页器 -->
       <div class="pagination-container">
         <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50]"
           layout="total, sizes, prev, pager, next, jumper" :total="total" @size-change="handleSizeChange"
@@ -91,7 +91,7 @@ import { solutionListApi, deleteSolution, industryListApi } from '@/api/common';
 
 const router = useRouter();
 
-// ---  数据状态 ---
+//  数据状态 
 const tableData = ref([]);
 const industryOptions = ref([]); // 存储行业下拉选项 
 const loading = ref(false);
@@ -118,13 +118,12 @@ const fetchList = async () => {
       page_size: pageSize.value,
       fid: searchForm.fid || undefined,
       keyword: searchForm.keyword,
-      only_active: false // 是否只查启用的，根据需求调整
+      only_active: false // 是否只查启用的 
     };
 
     const res = await solutionListApi(params);
 
     if (res.code === 200) {
-      console.log("chadaole");
       tableData.value = res.data;
       total.value = res.total || 0;
     } else {
@@ -166,7 +165,7 @@ const handleCurrentChange = (val) => {
   fetchList();
 };
 
-// --- 7. 操作事件 ---
+// 操作事件  
 const handleSearch = () => {
   currentPage.value = 1; // 重置到第一页
   fetchList(); // 重新请求或过滤
@@ -186,12 +185,12 @@ const getIndustryName = (row) => {
 };
 
 const goToCreate = () => {
-  // 跳转新增页 (不带 ID)
+  // 跳转新增页  
   router.push('/solution/solutionAddEdit');
 };
 
 const handleEdit = (row) => {
-  // 跳转编辑页 (带 ID)
+  // 跳转编辑页 (ID)
   router.push(`/solution/solutionAddEdit/${row.id}`);
 };
 

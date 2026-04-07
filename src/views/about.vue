@@ -2,7 +2,7 @@
   <div class="about-container">
     <div class="about-content">
 
-      <!-- === 左侧区域 === -->
+      <!--  左侧区域  -->
       <div class="left-section">
         <div class="image-placeholder">
           <el-image v-if="imageUrl" :src="imageUrl" fit="cover" class="preview-image">
@@ -33,7 +33,7 @@
         </div>
       </div>
 
-      <!-- === 右侧区域 === -->
+      <!--  右侧区域  -->
       <div class="right-section">
         <h3>关于我们 / 内容</h3>
         <WangEditor v-model="aboutContent" moduleType="about" />
@@ -57,16 +57,16 @@ import axios from 'axios';
 
 const uploadUrl = '/api/about/upload_image';
 
-// --- 数据状态 ---
+//  数据状态
 const aboutContent = ref('');
 const imageUrl = ref('');
 const uploading = ref(false);
 const submitting = ref(false);
 
-// --- 1. 初始化：加载已有数据 ---
+//  初始化加载已有数据
 const fetchAboutInfo = async () => {
   try {
-    const res = await axios.get('/api/about/info'); // 根据你的实际前缀调整，如 /api/about/info
+    const res = await axios.get('/api/about/info');  
     if (res.data.code === 200) {
       const data = res.data.data;
       if (data.cover_image) {
@@ -82,7 +82,7 @@ const fetchAboutInfo = async () => {
   }
 };
 
-// --- 2. 处理图片上传 ---
+// 处理图片上传
 const handleImageUpload = async (uploadFile) => {
   const file = uploadFile.raw;
   if (!file) return;
@@ -123,14 +123,14 @@ const handleImageUpload = async (uploadFile) => {
   }
 };
 
-// --- 3. 提交保存 ---
+// 提交保存
 const submitAbout = async () => {
   // 校验
   if (!imageUrl.value) {
     ElMessage.warning('请先上传封面图片');
     return;
   }
-  // 简单的富文本空值校验 (根据 WangEditor 的实际空值表现调整)
+  // 富文本空值校验  
   if (!aboutContent.value || aboutContent.value.trim() === '' || aboutContent.value === '<p><br></p>') {
     ElMessage.warning('请输入内容');
     return;
@@ -141,11 +141,11 @@ const submitAbout = async () => {
   try {
     // 构造 JSON 数据
     const payload = {
-      cover_image: imageUrl.value, // 注意字段名要和后端 Pydantic 模型一致
+      cover_image: imageUrl.value,  
       content: aboutContent.value
     };
 
-    // 调用后端保存接口
+   
     const res = await axios.post('/api/about/save', payload, {
       headers: { 'Content-Type': 'application/json' }
     });
@@ -163,15 +163,15 @@ const submitAbout = async () => {
   }
 };
 
-// 生命周期：挂载时加载数据
+ 
 onMounted(() => {
   fetchAboutInfo();
 });
 </script>
 
-<!-- style 部分保持不变 -->
+ 
 <style scoped lang="scss">
-/* ... 你的原有样式 ... */
+ 
 .about-container {
   padding: 20px;
   background-color: #f5f7fa;

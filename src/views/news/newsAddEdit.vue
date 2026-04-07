@@ -28,7 +28,7 @@
       <!-- 右侧侧边栏 (配置项) -->
       <div class="side-column">
 
-        <!-- 封面图 (参考 About 逻辑) -->
+        <!-- 封面图   -->
         <div class="config-block">
           <div class="block-title">封面图片</div>
           <div class="upload-area">
@@ -68,12 +68,12 @@
             style="width: 100%" size="default" />
         </div>
 
-        <!-- 置顶开关 (布尔值) -->
+        <!-- 置顶开关 -->
         <div class="config-block">
           <div class="block-title">置顶设置</div>
           <div class="switch-row">
             <span class="switch-label">是否置顶：</span>
-            <!-- 注意：active-value 和 inactive-value 设为 true/false 布尔值 -->
+            <!--  active-value 和 inactive-value 设为 true/false  -->
             <el-switch v-model="formData.isTop" active-value="true" inactive-value="false" active-text="是"
               inactive-text="否" inline-prompt />
           </div>
@@ -118,7 +118,7 @@ const newsId = ref(null);
 
 const detailUrl = '/api/news/';             
 
-// --- 数据状态 ---
+// 数据状态 
 const uploading = ref(false);
 const submitting = ref(false);
 

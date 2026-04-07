@@ -41,25 +41,25 @@
 </template>
 
 <script setup>
-// Vue3 核心 API
+
 import { ref, reactive, onMounted } from 'vue';
-// 路由
+
 import { useRouter } from 'vue-router';
-// Element Plus 消息提示
+
 import { ElMessage } from 'element-plus';
-// 加密工具（请确保路径正确）
+
 import { encrypt, decrypt } from '@/utils/crypto.js';
 
-// 路由实例
+
 const router = useRouter();
 
-// 表单引用
+
 const loginFormRef = ref(null);
 
 // 登录加载状态
 const loginLoading = ref(false);
 
-// 登录表单数据（响应式）
+// 登录表单数据 
 const loginForm = reactive({
   username: '',
   password: '',
@@ -78,7 +78,7 @@ const loginRules = reactive({
   ]
 });
 
-// 页面挂载时：初始化记住的密码/用户名
+// 页面挂载时
 onMounted(() => {
   initRememberInfo();
 });
@@ -102,14 +102,14 @@ const handleLogin = async () => {
     await loginFormRef.value.validate();
     loginLoading.value = true;
 
-    // 1. 构造请求参数（密码加密后传给 Python 后端）
+    //  构造请求参数（密码加密）
     const loginParams = {
       username: loginForm.username,
       password: encrypt(loginForm.password) // 前端加密密码，后端解密验证
     };
 
-    // 2. 模拟请求 Python 后端接口（实际项目替换为 axios）
-    // 示例：axios.post('/api/login', loginParams).then(res => { ... })
+    // 模拟请求 
+    //  axios.post('/api/login', loginParams).then(res => { ... })
     setTimeout(() => {
       // 模拟 Python 后端返回的 Token 数据（JWT 格式）
       const response = {
@@ -122,14 +122,14 @@ const handleLogin = async () => {
         msg: '登录成功'
       };
 
-      // 3. 登录成功：加密存储 Token 等信息
+      // 登录成功：加密存储 Token 等信息
       if (response.code === 200) {
         // 加密存储核心信息
         localStorage.setItem('token', encrypt(response.data.token));
         localStorage.setItem('username', encrypt(response.data.username));
         localStorage.setItem('expireTime', encrypt(response.data.expireTime.toString()));
 
-        // 4. 处理记住密码（仅用户勾选时存储）
+        // 处理记住密码（仅用户勾选时存储）
         if (loginForm.remember) {
           localStorage.setItem('remember_username', encrypt(loginForm.username));
           localStorage.setItem('remember_password', encrypt(loginForm.password));
@@ -139,9 +139,9 @@ const handleLogin = async () => {
           localStorage.removeItem('remember_password');
         }
 
-        // 5. 提示并跳转首页
+        //   提示并跳转首页
         ElMessage.success(response.msg);
-        router.push('/'); // 跳转到根路径首页
+        router.push('/');  
       } else {
         ElMessage.error(response.msg || '登录失败');
       }

@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-16 15:07:07
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-03-24 09:06:48
+ * @LastEditTime: 2026-04-07 09:55:47
  * @FilePath: \admin-demo\vite.config.js
  * @Description:
  */
@@ -19,8 +19,6 @@ import ElementPlus from "unplugin-element-plus/vite";
 
 export default ({ mode }) => {
   const env = loadEnv(mode, process.cwd());
-  // console.log(env);
-  // console.log(mode);
   return defineConfig({
     resolve: {
       alias: [
@@ -48,13 +46,13 @@ export default ({ mode }) => {
       postcss: {
         plugins: [
           postCssPxToRem({
-            // 【关键】与 rem.js 中的 baseSize 保持一致（100px）
+            // 与 rem.js 中的 baseSize 保持一致（100px）
             // 逻辑：设计稿 1920px -> 19.2rem (因为 1920/100 = 19.2)
             // 此时 1rem 在 1920 屏幕下等于 100px
             rootValue: 100,
-            // 所有属性都转换，除了 border（防止 1px 边框转 rem 后在某些设备消失）
+            // 所有属性都转换，除了 border
             propList: ["*", "!border"],
-            // 忽略选择器，防止第三方库样式错乱
+            //  防止第三方库样式错乱
             selectorBlackList: ["norem", "el-icon"],
             unitPrecision: 5,
             replace: true,

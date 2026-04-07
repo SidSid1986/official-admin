@@ -19,7 +19,7 @@ import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
 import "@wangeditor/editor/dist/css/style.css";
 import { uploadImageCommon } from "@/api/common.js";
 
-// --- Props & Emits ---
+
 const props = defineProps({
   modelValue: {
     type: String,
@@ -36,9 +36,9 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue"]);
 
-// --- 响应式数据 ---
+
 const editorRef = shallowRef();
-// 初始值设为空字符串或默认值，主要依赖 watch 来同步最新数据
+
 const valueHtml = ref(props.modelValue);
 const mode = ref("default");
 
@@ -112,7 +112,7 @@ const editorConfig = {
         }
 
 
-        // 【核心】调用 insertFn 将图片插入编辑器
+        //  调用 insertFn 将图片插入编辑器
         // 参数顺序：(src, alt, href)
         // src: 图片地址
         // alt: 图片描述 (通常用文件名)
@@ -126,18 +126,16 @@ const editorConfig = {
   },
 };
 
-// --- 事件处理 ---
-
+//   事件处理 
 const handleCreated = (editor) => {
   editorRef.value = editor;
-  console.log("✅ 编辑器实例已创建");
-
-  // 如果此时 props 已经有值（极小概率），强制同步一次
+  console.log(" 编辑器实例已创建");
+  // 如果此时 props 已经有值 ，强制同步 
   if (props.modelValue && props.modelValue !== valueHtml.value) {
     valueHtml.value = props.modelValue;
     try {
       editor.setHtml(props.modelValue);
-    } catch (e) { /* 忽略初始化时的潜在错误 */ }
+    } catch (e) { console.warn(" 初始化编辑器时发生非致命错误:", e); }
   }
 };
 
@@ -159,45 +157,44 @@ const customPaste = (editor, event, callback) => {
   callback(true);
 };
 
-// --- 【核心修复】Watch 监听逻辑 ---
-// 监听父组件传来的 modelValue 变化，实现异步数据回显
+
+
 watch(
   () => props.modelValue,
   async (newVal) => {
     if (!newVal) return;
 
-    // 1. 先更新本地响应式变量，触发 v-model 机制
+    //  先更新本地响应式变量，触发 v-model 机制
     valueHtml.value = newVal;
-    console.log("📡 监听到内容变化，准备同步到编辑器...");
+    console.log("监听到内容变化，准备同步到编辑器...");
 
-    // 2. 如果编辑器还没创建好，等待它创建（handleCreated 会处理后续）
+    //  如果编辑器还没创建好，等待它创建 
     if (!editorRef.value) {
-      console.log("⏳ 编辑器未就绪，等待初始化...");
+      console.log("编辑器未就绪，等待初始化...");
       return;
     }
 
-    // 3. 等待 DOM 更新
+
     await nextTick();
 
-    // 4. 尝试同步内容到编辑器实例
+    //  同步内容到编辑器实例
     try {
       const editor = editorRef.value;
       const currentHtml = editor.getHtml();
 
-      // 只有当内容真的不一致时才调用 setHtml，避免不必要的重绘
+      //  当内容 不一致时 调用 setHtml 
       if (newVal.trim() !== currentHtml.trim()) {
         editor.setHtml(newVal);
-        console.log("✅ 内容已成功回显到编辑器");
+        console.log(" 内容已成功回显到编辑器");
       }
     } catch (error) {
-      // 捕获 Slate 相关的 DOM 解析错误，防止页面崩溃
-      console.warn("⚠️ 同步内容时发生非致命错误:", error);
+      console.warn(" 同步内容时发生非致命错误:", error);
     }
   },
-  { immediate: true } // 组件挂载时立即执行一次检查
+  { immediate: true }
 );
 
-// --- 生命周期 ---
+ 
 onBeforeUnmount(() => {
   const editor = editorRef.value;
   if (editor) {

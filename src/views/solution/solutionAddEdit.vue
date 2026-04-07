@@ -61,7 +61,7 @@
             </div>
           </el-form-item>
 
-          <!-- 方案名称 & 封面图入口 -->
+          <!-- 方案名称 封面图-->
           <el-form-item label="方案名称" prop="name">
             <div style="display: flex; align-items: center; width:70%">
               <el-input v-model="formData.title" placeholder="例如：汽车焊接自动化方案" maxlength="100" show-word-limit
@@ -73,8 +73,8 @@
             </div>
             <!-- 显示已上传的封面图缩略提示 -->
             <div v-if="formData.cover1 || formData.cover2" style="margin-top: 5px; font-size: 12px; color: #67c23a;">
-              <span v-if="formData.cover1">✅ 封面1已上传</span>
-              <span v-if="formData.cover2" style="margin-left: 10px;">✅ 封面2已上传</span>
+              <span v-if="formData.cover1"> 封面1已上传</span>
+              <span v-if="formData.cover2" style="margin-left: 10px;"> 封面2已上传</span>
             </div>
           </el-form-item>
 
@@ -96,7 +96,7 @@
       </el-card>
     </div>
 
-    <!-- 1. 行业编辑/新增 对话框 (保持不变) -->
+    <!-- 行业编辑/新增 dialog  -->
     <el-dialog v-model="dialogVisible" :title="dialogMode === 'add' ? '新增行业' : '编辑行业'" width="500px">
       <el-form :model="dialogForm" :rules="dialogRules" ref="dialogFormRef" label-width="90px">
         <el-form-item label="行业名称" prop="name">
@@ -148,7 +148,7 @@
       </template>
     </el-dialog>
 
-    <!--  解决方案封面图管理对话框 -->
+    <!-- 解决方案封面图管理 dialog -->
     <el-dialog v-model="coverDialogVisible" title="管理解决方案封面图" width="500px">
       <el-form :model="coverForm" label-width="90px">
         <el-form-item label="封面图配置">
@@ -220,7 +220,7 @@ const dialogFormRef = ref(null);
 const submitting = ref(false);
 const dialogLoading = ref(false);
 
-// --- 1. 行业数据管理 ---
+//  行业数据管理  
 const industryOptions = ref([]);
 
 const fetchIndustries = async () => {
@@ -237,7 +237,7 @@ const fetchIndustries = async () => {
   }
 };
 
-// --- 2. 弹窗逻辑 (行业配置) ---
+//  弹窗 行业配置  
 const dialogVisible = ref(false);
 const dialogMode = ref('add');
 
@@ -342,7 +342,7 @@ const confirmDialog = async () => {
   });
 };
 
-// --- 3. 【新增】封面图弹窗逻辑 ---
+//  封面图弹窗  
 const coverDialogVisible = ref(false);
 const coverDialogLoading = ref(false);
 const coverForm = reactive({
@@ -637,7 +637,7 @@ onMounted(() => {
     }
   }
 
-  /* 通用上传组样式   */
+  //通用上传组样式 
   .icon-upload-group {
     display: flex;
     gap: 20px;
