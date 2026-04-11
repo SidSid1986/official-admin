@@ -63,7 +63,7 @@ const imageUrl = ref('');
 const uploading = ref(false);
 const submitting = ref(false);
 
-//  初始化加载已有数据
+ 
 const fetchAboutInfo = async () => {
   try {
     const res = await axios.get('/api/about/info');  

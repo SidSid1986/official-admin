@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-16 15:03:38
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-04-07 10:05:02
+ * @LastEditTime: 2026-04-09 10:45:15
  * @FilePath: \admin-demo\src\router\index.js
  * @Description:
  */
@@ -61,9 +61,22 @@ const routes = [
         component: () => import("@/views/about.vue"),
         meta: {
           title: "关于我们",
+          icon: "Monitor",
           breadcrumb: [{ title: "关于我们", path: "/about" }],
         },
       },
+      //关于我们-轮播图
+      {
+        path: "aboutSwiper",
+        name: "AboutSwiper",
+        component: () => import("@/views/aboutSwiper.vue"),
+        meta: {
+          title: "轮播图",
+          icon: "Monitor",
+          breadcrumb: [{ title: "关于我们", path: "/aboutSwiper" }],
+        },
+      },
+
       //资料下载
       {
         path: "download",
@@ -135,6 +148,32 @@ const routes = [
           breadcrumb: [
             { title: "解决方案", path: "/solution/solutionList" },
             { title: "增加编辑解决方案" },
+          ],
+        },
+      },
+
+      //工艺解决方案
+      {
+        path: "process/processList",
+        name: "ProcessList",
+        component: () => import("@/views/process/processList.vue"),
+        meta: {
+          title: "工艺解决方案列表",
+          breadcrumb: [
+            { title: "工艺解决方案", path: "/process/processList" },
+            { title: "工艺解决方案列表" },
+          ],
+        },
+      },
+      {
+        path: "process/processAddEdit/:id?",
+        name: "ProcessAddEdit",
+        component: () => import("@/views/process/processAddEdit.vue"),
+        meta: {
+          title: "增加编辑工艺解决方案",
+          breadcrumb: [
+            { title: "工艺解决方案", path: "/process/processList" },
+            { title: "增加编辑工艺解决方案" },
           ],
         },
       },

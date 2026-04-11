@@ -8,13 +8,6 @@
             @change="handleSearch" />
         </el-form-item>
 
-        <el-form-item label="所属行业">
-          <el-select v-model="searchForm.fid" placeholder="请选择行业" clearable style="width: 240px" @change="handleSearch">
-            <el-option v-for="item in industryOptions" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-
-        </el-form-item>
-
         <el-form-item>
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
           <el-button :icon="Refresh" @click="handleReset">重置</el-button>
@@ -37,15 +30,6 @@
             <span class="edit-link" @click="handleEdit(scope.row)" title="点击编辑">
               {{ scope.row.title }}
             </span>
-          </template>
-        </el-table-column>
-
-        <!-- 所属行业 -->
-        <el-table-column label="所属行业" width="150" align="center">
-          <template #default="scope">
-            <el-tag type="info" effect="plain">
-              {{ getIndustryName(scope.row) }}
-            </el-tag>
           </template>
         </el-table-column>
 
@@ -87,7 +71,7 @@ import { Search, Refresh, Plus, Edit, Delete } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 
 // 引入真实的 API 方法
-import { solutionListApi, deleteSolution, industryListApi } from '@/api/common';
+import { processListApi, deleteProcess, processDetailApi } from '@/api/common';
 
 const router = useRouter();
 
@@ -116,12 +100,11 @@ const fetchList = async () => {
     const params = {
       page: currentPage.value,
       page_size: pageSize.value,
-      fid: searchForm.fid || undefined,
       keyword: searchForm.keyword,
       only_active: false // 是否只查启用的 
     };
 
-    const res = await solutionListApi(params);
+    const res = await processListApi(params);
 
     if (res.code === 200) {
       tableData.value = res.data;
@@ -137,20 +120,7 @@ const fetchList = async () => {
   }
 };
 
-//  行业数据管理
-const fetchIndustries = async () => {
-  try {
-    const res = await industryListApi();
-    if (res.code === 200) {
-      industryOptions.value = res.data || [];
-    } else {
-      ElMessage.error(res.msg || '获取行业列表失败');
-    }
-  } catch (error) {
-    console.error(error);
-    ElMessage.error('网络异常，获取行业列表失败');
-  }
-};
+
 
 
 
@@ -168,30 +138,24 @@ const handleCurrentChange = (val) => {
 // 操作事件  
 const handleSearch = () => {
   currentPage.value = 1; // 重置到第一页
-  fetchList(); // 重新请求或过滤
+  fetchList();
 };
 
 const handleReset = () => {
-  searchForm.title = '';
+  searchForm.keyword = '';
   searchForm.fid = null;
   handleSearch();
 };
 
 
-const getIndustryName = (row) => {
-
-  if (row.industry_name) return row.industry_name;
-  return `行业ID:${row.fid}`;
-};
-
 const goToCreate = () => {
   // 跳转新增页  
-  router.push('/solution/solutionAddEdit');
+  router.push('/process/processAddEdit');
 };
 
 const handleEdit = (row) => {
   // 跳转编辑页 (ID)
-  router.push(`/solution/solutionAddEdit/${row.id}`);
+  router.push(`/process/processAddEdit/${row.id}`);
 };
 
 const handleDelete = (row) => {
@@ -202,7 +166,7 @@ const handleDelete = (row) => {
   }).then(async () => {
     loading.value = true;
 
-    const res = await deleteSolution(row.id);
+    const res = await deleteProcess(row.id);
     if (res.code === 200) {
       ElMessage.success('删除成功');
 
@@ -215,13 +179,14 @@ const handleDelete = (row) => {
     } else {
       ElMessage.error(res.msg || '删除失败');
     }
+
   });
 };
 
 
 onMounted(() => {
   fetchList();
-  fetchIndustries();
+
 });
 </script>
 

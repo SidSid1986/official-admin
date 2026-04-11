@@ -55,7 +55,7 @@
             <Plus />
           </el-icon>
         </el-upload>
-        <div class="tip-text">* 用于首页核心业务板块展示，建议尺寸一致。</div>
+        <!-- <div class="tip-text">* 用于首页核心业务板块展示，建议尺寸一致。</div> -->
       </div>
     </el-card>
 
@@ -78,7 +78,7 @@
             <Plus />
           </el-icon>
         </el-upload>
-        <div class="tip-text">* 显示在页面最底部的合作伙伴或品牌标识。</div>
+        <!-- <div class="tip-text">* 显示在页面最底部</div> -->
       </div>
     </el-card>
 

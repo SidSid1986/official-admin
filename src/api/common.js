@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-16 15:03:38
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-04-07 08:44:53
+ * @LastEditTime: 2026-04-09 13:53:07
  * @FilePath: \admin-demo\src\api\common.js
  * @Description:
  */
@@ -37,7 +37,7 @@ export function putServiceContent(data) {
   });
 }
 
-export function fileListApi(page, pageSize,keyword) {
+export function fileListApi(page, pageSize, keyword) {
   return request({
     url: `/api/files/list?page=${page}&page_size=${pageSize}&keyword=${keyword}`,
     method: "get",
@@ -154,6 +154,20 @@ export function uploadImageCommon(data) {
   });
 }
 
+//微信下载图片
+ export function downloadWechatImage(imgUrl, module = "") {
+  return request({
+    url: "/api/common/download_wechat_image",
+    method: "post",
+    data: {
+      img_url: imgUrl,
+      module: module,
+    },
+  });
+}
+
+
+
 export function categoryTree() {
   return request({
     url: "/api/category/tree",
@@ -210,11 +224,85 @@ export function deleteProduct(id) {
   });
 }
 
-export function getProductDetail(robotType,id) {
+export function getProductDetail(robotType, id) {
   return request({
     url: `/api/product/detail/${robotType}/${id}`,
     method: "get",
   });
 }
 
- 
+//abuout swiper
+export function aboutImage() {
+  return request({
+    url: "/api/about/banners",
+    method: "get",
+  });
+}
+
+//step list
+export function stepListApi() {
+  return request({
+    url: "/api/about/steps",
+    method: "get",
+  });
+}
+
+//增加修改步骤
+export function addOrUpdateStep(data) {
+  return request({
+    url: "/api/about/step/save",
+    method: "post",
+    data,
+  });
+}
+
+//删除步骤
+export function deleteStepApi(step_id) {
+  return request({
+    url: `/api/about/step/delete/${step_id}`,
+    method: "delete",
+  });
+}
+
+//删除轮播图
+export function deleteBannerApi(banner_id) {
+  return request({
+    url: `/api/about/banner/delete/${banner_id}`,
+    method: "delete",
+  });
+}
+
+//========工艺解决方案=========
+//增加修改工艺解决方案
+export function addOrUpdateProcess(data) {
+  return request({
+    url: "/api/process/save",
+    method: "post",
+    data,
+  });
+}
+
+//工艺工艺解决方案列表
+export function processListApi(params) {
+  return request({
+    url: "/api/process/list",
+    method: "get",
+    params: params,
+  });
+}
+
+//删除工艺解决方案
+export function deleteProcess(process_id) {
+  return request({
+    url: `/api/process/delete/${process_id}`,
+    method: "delete",
+  });
+}
+
+//工艺解决方案详情
+export function processDetailApi(process_id) {
+  return request({
+    url: `/api/process/detail/${process_id}`,
+    method: "get",
+  });
+}

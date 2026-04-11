@@ -74,12 +74,26 @@
             <template #title>服务支持</template>
           </el-menu-item>
           <!-- 关于我们about -->
-          <el-menu-item index="/about">
+          <!-- <el-menu-item index="/about">
             <el-icon size="24">
               <Document />
             </el-icon>
             <template #title>关于我们</template>
-          </el-menu-item>
+          </el-menu-item> -->
+
+          <el-sub-menu index="/about">
+            <template #title>
+              <el-icon size="24">
+                <Document />
+              </el-icon>
+              <span>关于我们</span>
+            </template>
+            <el-menu-item index="/about">简介</el-menu-item>
+            <el-menu-item index="/aboutSwiper">轮播图</el-menu-item>
+          </el-sub-menu>
+
+
+
           <!-- 资料下载downLoad -->
           <el-menu-item index="/downLoad">
             <el-icon size="24">
@@ -105,24 +119,32 @@
               <el-icon size="24">
                 <Document />
               </el-icon>
-              <span>解决方案</span>
+              <span>行业解决方案</span>
             </template>
-            <el-menu-item index="/solution/solutionList">解决方案列表</el-menu-item>
+            <el-menu-item index="/solution/solutionList">行业解决方案列表</el-menu-item>
             <el-menu-item index="/solution/solutionAddEdit">增加编辑解决方案</el-menu-item>
+          </el-sub-menu>
+          <!-- 工艺解决方案process -->
+          <el-sub-menu index="process-group">
+            <template #title>
+              <el-icon size="24">
+                <Document />
+              </el-icon>
+              <span>工艺解决方案</span>
+            </template>
+            <el-menu-item index="/process/processList">工艺解决方案列表</el-menu-item>
+            <el-menu-item index="/process/processAddEdit">增加编辑工艺解决方案</el-menu-item>
           </el-sub-menu>
         </el-menu>
       </el-aside>
 
       <!-- 右侧内容区域 -->
       <el-main class="admin-content">
-
         <el-breadcrumb class="content-breadcrumb" separator="/">
           <el-breadcrumb-item v-for="(item, index) in currentBreadcrumb" :key="index" :to="getBreadcrumbPath(index)">
-
             {{ item.title }}
           </el-breadcrumb-item>
         </el-breadcrumb>
-
         <el-card class="content-card">
           <router-view v-slot="{ Component }">
             <transition name="fade-transform" mode="out-in">
