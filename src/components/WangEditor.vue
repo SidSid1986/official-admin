@@ -13,8 +13,8 @@
 import { ref, shallowRef, onBeforeUnmount, watch, nextTick } from "vue";
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
 import "@wangeditor/editor/dist/css/style.css";
-import { uploadImageCommon } from "@/api/common.js";
-// 新增：引入微信图片下载接口
+import { uploadImageCommon, uploadVideoCommon } from "@/api/common.js";
+// 引入微信图片下载接口
 import { downloadWechatImage } from "@/api/common.js";
 
 const props = defineProps({
@@ -68,6 +68,22 @@ const editorConfig = {
           console.log("手动上传成功:", res.data.url);
         }
       },
+    },
+
+    //视频上传
+    uploadVideo: {
+      async customUpload(file, insertFn) {
+        console.log("上传视频:", file.name);
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("module", props.moduleType);
+
+        const res = await uploadVideoCommon(formData);
+        if (res.code === 200 && res.data?.url) {
+          insertFn(res.data.url); // 插入视频
+          console.log("视频上传成功:", res.data.url);
+        }
+      }
     },
 
     // 粘贴图片自动上传

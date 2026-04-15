@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-16 15:03:38
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-04-09 13:53:07
+ * @LastEditTime: 2026-04-15 15:56:57
  * @FilePath: \admin-demo\src\api\common.js
  * @Description:
  */
@@ -151,6 +151,16 @@ export function uploadImageCommon(data) {
     headers: {
       "Content-Type": "multipart/form-data",
     },
+  });
+}
+
+// 上传视频（WangEditor）
+export function uploadVideoCommon(formData) {
+  return request({
+    url: "/api/common/upload_video",
+    method: "post",
+    data: formData,
+    headers: { "Content-Type": "multipart/form-data" }
   });
 }
 

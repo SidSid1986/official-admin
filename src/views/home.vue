@@ -19,7 +19,7 @@
       <div class="upload-section">
         <el-upload v-model:file-list="fileList" :action="uploadUrl" :headers="uploadHeaders"
           :data="{ img_type: 'banner' }" list-type="picture-card" :on-success="handleUploadSuccess"
-          :on-error="handleUploadError" :on-preview="handlePictureCardPreview" :on-remove="handleRemove" multiple>
+          :on-error="handleUploadError" :on-preview="handlePictureCardPreview" :before-remove="handleRemove" multiple>
           <el-icon class="uploader-icon">
             <Plus />
           </el-icon>
@@ -49,7 +49,7 @@
 
         <el-upload v-model:file-list="fileList2" :action="uploadUrl" :headers="uploadHeaders"
           :data="{ img_type: 'core' }" list-type="picture-card" :on-success="handleUploadSuccess"
-          :on-error="handleUploadError" :on-preview="handlePictureCardPreview2" :on-remove="handleRemove2"
+          :on-error="handleUploadError" :on-preview="handlePictureCardPreview2" :before-remove="handleRemove2"
           :on-exceed="handleExceed">
           <el-icon class="uploader-icon">
             <Plus />
@@ -73,7 +73,7 @@
         <el-upload class="avatar-uploader" :class="fileList3.length > 0 ? 'avatar-uploader-has-file' : ''"
           :action="uploadUrl" :headers="uploadHeaders" :data="{ img_type: 'footer' }" list-type="picture-card"
           v-model:file-list="fileList3" :on-success="handleUploadSuccess" :on-error="handleUploadError"
-          :on-preview="handlePictureCardPreview3" :on-remove="handleRemove3" :limit="1" :on-exceed="handleExceed">
+          :on-preview="handlePictureCardPreview3" :before-remove="handleRemove3" :limit="1" :on-exceed="handleExceed">
           <el-icon class="uploader-icon">
             <Plus />
           </el-icon>
@@ -95,7 +95,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { Plus } from '@element-plus/icons-vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { homeImage, deleteImage } from '@/api/common.js';
 
 const uploadUrl = "/api/home/upload_image";
@@ -150,26 +150,63 @@ const openPreview = (url) => {
 
 
 const handleRemove = (uploadFile, uploadFiles) => {
-  console.log('移除文件', uploadFile);
-  console.log(uploadFile.id);
-  //  后端删除：
-  delImageFunc(uploadFile.id);
+  // 返回 Promise，弹框等待用户确认
+  return ElMessageBox.confirm('确认删除轮播图？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+
+    await delImageFunc(uploadFile.id);
+
+    return true;
+  }).catch(() => {
+
+    ElMessage.info('已取消');
+    return false;
+  });
 };
 const handlePictureCardPreview = (uploadFile) => {
   openPreview(uploadFile.url);
 };
 
 const handleRemove2 = (uploadFile, uploadFiles) => {
-  console.log('行业图移除', uploadFile);
-  delImageFunc(uploadFile.id);
+  return ElMessageBox.confirm('确认删除核心业务图？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+
+    await delImageFunc(uploadFile.id);
+
+    return true;
+  }).catch(() => {
+
+    ElMessage.info('已取消');
+    return false;
+  });
+
+
 };
 const handlePictureCardPreview2 = (uploadFile) => {
   openPreview(uploadFile.url);
 };
 
 const handleRemove3 = (uploadFile, uploadFiles) => {
-  console.log('底部图移除', uploadFile);
-  delImageFunc(uploadFile.id);
+  return ElMessageBox.confirm('确认删除底部品牌图？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+
+    await delImageFunc(uploadFile.id);
+
+    return true;
+  }).catch(() => {
+
+    ElMessage.info('已取消');
+    return false;
+  });
 };
 const handlePictureCardPreview3 = (uploadFile) => {
   openPreview(uploadFile.url);

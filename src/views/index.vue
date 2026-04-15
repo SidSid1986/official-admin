@@ -1,7 +1,7 @@
 <!--
  * @Author: Sid Li
  * @Date: 2026-03-17 10:15:00
- * @Description: 布局容器 (Layout) - 仅负责结构，内容由路由决定
+ * @Description: 布局容器 (Layout)  
 -->
 <template>
   <div class="admin-container">

@@ -56,17 +56,15 @@
 
           <el-col :span="12">
             <el-form-item label="产品类型" prop="robotType">
-              <!-- <el-input v-model="formData.robotType" placeholder="例如：RBT-2026-Pro" clearable /> -->
               <span>{{ formData.robotType }}</span>
-
             </el-form-item>
           </el-col>
 
           <el-col :span="12">
             <el-form-item label="是否放置首页" prop="ifMain">
-              <el-radio-group v-model="formData.ifMain" @change="handleIfMainChange">
-                <el-radio :label="1">是</el-radio>
-                <el-radio :label="0">否</el-radio>
+              <el-radio-group v-model="formData.ifMain">
+                <el-radio :value="1">是</el-radio>
+                <el-radio :value="0">否</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -74,8 +72,66 @@
 
         <!-- 动态区域  currentProductType 有值 显示) -->
         <div v-if="currentProductType === 'robot'">
-          <el-divider content-position="left">🤖 机器人特有参数</el-divider>
-          <RobotForm v-model="robotFormData" />
+          <el-divider content-position="left">🤖 机器人固定参数</el-divider>
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <el-form-item label="最大臂展">
+                <el-input v-model="robotFormData.maxArmSpan" placeholder="请输入" clearable />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="最大负载">
+                <el-input v-model="robotFormData.maxWeight" placeholder="请输入" clearable />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="轴数">
+                <el-input v-model="robotFormData.switchNum" placeholder="请输入" clearable />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="本体重量">
+                <el-input v-model="robotFormData.weight" placeholder="请输入" clearable />
+              </el-form-item>
+            </el-col>
+          </el-row>
+
+          <!-- 自定义多表格模块 -->
+          <el-divider content-position="left">📋 自定义参数表格</el-divider>
+          <div style="margin-bottom: 12px">
+            <el-button type="success" icon="Plus" @click="addCustomTable">
+              添加新表格
+            </el-button>
+          </div>
+
+          <div v-for="(table, idx) in customTables" :key="idx" style="margin-bottom: 24px; border: 1px solid #e4e7ed; padding: 16px; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <el-input v-model="table.name" placeholder="表格名称（如：性能参数）" style="width: 280px" />
+              <el-button type="danger" icon="Delete" size="small" @click="removeTable(idx)">删除此表格</el-button>
+            </div>
+
+            <el-table :data="table.rows" border style="width: 100%">
+              <el-table-column label="参数名称" width="200">
+                <template #default="scope">
+                  <el-input v-model="scope.row.key" placeholder="参数名" />
+                </template>
+              </el-table-column>
+              <el-table-column label="参数值">
+                <template #default="scope">
+                  <el-input v-model="scope.row.value" placeholder="参数值" />
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="100">
+                <template #default="scope">
+                  <el-button type="text" danger @click="removeRow(idx, scope.$index)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+
+            <div style="margin-top: 8px; text-align: right">
+              <el-button type="primary" icon="Plus" size="small" @click="addRow(idx)">添加参数行</el-button>
+            </div>
+          </div>
         </div>
 
         <div v-else-if="currentProductType === 'sport'">
@@ -107,7 +163,6 @@ import { ElMessage } from 'element-plus';
 import RobotForm from '@/components/RobotForm.vue';
 import SportForm from '@/components/SportForm.vue';
 
-
 import {
   categoryTree,
   saveProductRobot,
@@ -138,12 +193,38 @@ const formData = reactive({
   ifMain: 0,
 });
 
-const robotFormData = reactive({});
+// 机器人固定参数
+const robotFormData = reactive({
+  maxArmSpan: '',
+  maxWeight: '',
+  switchNum: '',
+  weight: ''
+});
+
+// 自定义表格数据
+const customTables = ref([]);
 const sportFormData = reactive({});
 
 const productTypeMap = new Map();
 const ROOT_ROBOT_ID = 4;
 const ROOT_SPORT_ID = 11;
+
+// 表格操作方法
+const addCustomTable = () => {
+  customTables.value.push({
+    name: '',
+    rows: [{ key: '', value: '' }]
+  });
+};
+const removeTable = (idx) => {
+  customTables.value.splice(idx, 1);
+};
+const addRow = (tableIdx) => {
+  customTables.value[tableIdx].rows.push({ key: '', value: '' });
+};
+const removeRow = (tableIdx, rowIdx) => {
+  customTables.value[tableIdx].rows.splice(rowIdx, 1);
+};
 
 const transformTree = (nodes) => {
   if (!nodes) return [];
@@ -181,7 +262,6 @@ const getCategoryOptions = async (productType, id) => {
       categoryOptions.value = transformTree(response.data);
       console.log(' [1] 分类树转换完成，选项数量:', categoryOptions.value.length);
 
-      //  树加载完后，如果是编辑模式，立即加载详情
       if (editMode.value && currentProductId.value) {
         console.log(' [2] 检测到编辑模式，ID:', currentProductId.value, '开始加载详情...');
         loadProductDetail(productType, id);
@@ -202,20 +282,17 @@ const loadProductDetail = async (productType, id) => {
   console.log('[3] 请求详情接口 GET /product/detail/', id);
 
   try {
-
     const res = await getProductDetail(productType, id);
-
     console.log(' [3] 接口返回数据:', res);
 
     if (res.code === 200 && res.data) {
       const data = res.data;
       console.log(' [4] 开始填充表单数据...');
 
-      //  填充通用字段
       formData.productName = data.product_name;
       formData.modelNumber = data.model_number;
       formData.mainImageUrl = data.main_image_url || '';
-      formData.ifMain = data.if_main || '';
+      formData.ifMain = data.if_main || 0;
 
       console.log(' [4.1] 通用字段填充后:', {
         name: formData.productName,
@@ -223,13 +300,11 @@ const loadProductDetail = async (productType, id) => {
         img: formData.mainImageUrl
       });
 
-      // 图片回显
       if (formData.mainImageUrl) {
         mainImageList.value = [{ name: 'img', url: formData.mainImageUrl }];
         console.log('[4.2] 图片列表已更新');
       }
 
-      //   处理级联选择器  
       const path = findCategoryPath(categoryOptions.value, data.category_id);
       console.log('  [4.3] 查找分类路径结果:', path, '目标 ID:', data.category_id);
 
@@ -242,24 +317,22 @@ const loadProductDetail = async (productType, id) => {
         currentProductType.value = data.product_type;
       }
 
-      //  特有字段
       if (data.product_type === 'robot') {
-        Object.assign(robotFormData, {
-          robotName: data.robot_name,
-          maxArmSpan: data.max_arm_span,
-          maxWeight: data.max_weight,
-          switchNum: data.switch_num,
-          weight: data.weight,
-          perprecision: data.perprecision,
-          ipLevel: data.ip_level,
-          insType: data.ins_type,
-          driveType: data.drive_type,
-          authSupport: data.auth_support,
-          insRequire: data.ins_require,
-          remark: data.remark,
-          detailImg: data.detail_img
-        });
-        console.log(' [4.4] 机器人特有数据已填充');
+        // 固定参数回填
+        robotFormData.maxArmSpan = data.max_arm_span || '';
+        robotFormData.maxWeight = data.max_weight || '';
+        robotFormData.switchNum = data.switch_num || '';
+        robotFormData.weight = data.weight || '';
+
+        // 自定义表格回填
+        if (data.custom_tables && Array.isArray(data.custom_tables)) {
+          customTables.value = data.custom_tables.map(t => ({
+            name: t.name || '',
+            rows: t.rows.map(r => ({ key: r[0] || '', value: r[1] || '' }))
+          }));
+        }
+
+        console.log(' [4.4] 机器人数据已填充');
       } else if (data.product_type === 'sport') {
         const dictToArray = (obj) => {
           if (!obj || typeof obj !== 'object') return [];
@@ -293,48 +366,42 @@ const loadProductDetail = async (productType, id) => {
   }
 };
 
-
 const handleCategoryChange = (val, isInit = false) => {
   if (!val || val.length === 0) {
     currentProductType.value = '';
-    formData.robotType = ''; // 清空 robotType
+    formData.robotType = '';
     return;
   }
 
-  //  获取最后一级分类的 ID
   const selectedCategoryId = val[val.length - 1];
 
-  //  根据 ID 查找对应的分类对象，从而获取其名称
-  // 定义一个递归查找函数
   function findCategoryName(categories, targetId) {
     for (let cat of categories) {
       if (cat.value === targetId) {
-        return cat.label; // 找到后返回其 label 
+        return cat.label;
       }
       if (cat.children && cat.children.length > 0) {
         const foundName = findCategoryName(cat.children, targetId);
-        if (foundName) return foundName; // 如果在子级找到了，也返回名称
+        if (foundName) return foundName;
       }
     }
-    return null; // 没找到则返回 null
+    return null;
   }
 
-  //   执行查找并赋值
   const categoryName = findCategoryName(categoryOptions.value, selectedCategoryId);
   if (categoryName) {
     formData.robotType = categoryName;
     console.log(`[5] 分类变化: "${categoryName}" -> formData.robotType`);
   } else {
-
     formData.robotType = '';
     console.warn('未能根据ID找到对应的分类名称:', selectedCategoryId);
   }
-
 
   const type = productTypeMap.get(selectedCategoryId);
   currentProductType.value = type || '';
   console.log(' [5] 分类变化触发，当前类型:', currentProductType.value);
 };
+
 const handleMainImageChange = (uploadFile) => {
   mainImageList.value = [uploadFile];
   const rawFile = uploadFile.raw;
@@ -371,7 +438,6 @@ const handleSubmit = async () => {
 
     loading.value = true;
     try {
-      // 图片上传逻辑
       let finalImageUrl = formData.mainImageUrl;
       if (finalImageUrl && finalImageUrl.startsWith('blob:')) {
         const fd = new FormData();
@@ -384,34 +450,31 @@ const handleSubmit = async () => {
         }
       }
 
-      // 构造 Payload
       const basePayload = {
         ...(editMode.value ? { id: currentProductId.value } : {}),
         product_name: formData.productName,
         model_number: formData.modelNumber,
         robot_type: formData.robotType,
         main_image_url: finalImageUrl,
-        category_id: formData.category[1],
+        category_id: formData.category[formData.category.length - 1],
         is_active: true,
         if_main: formData.ifMain,
       };
 
       let specificPayload = {};
       if (currentProductType.value === 'robot') {
+        // 转换表格格式
+        const tables = customTables.value.map(t => ({
+          name: t.name,
+          rows: t.rows.map(r => [r.key || '', r.value || ''])
+        }));
+
         specificPayload = {
-          robot_name: robotFormData.robotName,
           max_arm_span: robotFormData.maxArmSpan,
           max_weight: robotFormData.maxWeight,
           switch_num: robotFormData.switchNum,
           weight: robotFormData.weight,
-          perprecision: robotFormData.perprecision,
-          ip_level: robotFormData.ipLevel,
-          ins_type: robotFormData.insType,
-          drive_type: robotFormData.driveType,
-          auth_support: robotFormData.authSupport,
-          ins_require: robotFormData.insRequire,
-          remark: robotFormData.remark,
-          detail_img: robotFormData.detailImg
+          custom_tables: tables
         };
       } else if (currentProductType.value === 'sport') {
         const toDict = (arr) => {
@@ -452,6 +515,7 @@ const handleSubmit = async () => {
     }
   });
 };
+
 onMounted(() => {
   console.log(' [0] 组件挂载，当前路由 Params:', route.params);
   console.log(' [0] 当前路由 Query:', route.query);
@@ -470,9 +534,6 @@ onMounted(() => {
   getCategoryOptions(productType, id);
 });
 </script>
-
-
-
 
 <style scoped lang="scss">
 .product-add-container {
