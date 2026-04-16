@@ -2,7 +2,7 @@
  * @Author: Sid Li
  * @Date: 2026-03-16 15:03:38
  * @LastEditors: Sid Li
- * @LastEditTime: 2026-04-15 15:56:57
+ * @LastEditTime: 2026-04-16 16:37:13
  * @FilePath: \admin-demo\src\api\common.js
  * @Description:
  */
@@ -126,6 +126,7 @@ export function solutionListApi(params) {
     params: params,
   });
 }
+
 //删除方案
 export function deleteSolution(solution_id) {
   return request({
@@ -142,12 +143,16 @@ export function solutionDetailApi(solution_id) {
   });
 }
 
-//通用上传图片
-export function uploadImageCommon(data) {
+//======= 统一上传接口 =======//
+export function uploadImageCommon(data, folder = "common") {
+  const formData = new FormData();
+  formData.append('file', data.get('file'));
+  formData.append('folder', folder);
+  
   return request({
-    url: "/api/common/upload_image",
+    url: "/api/product/upload",
     method: "post",
-    data,
+    data: formData,
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -165,7 +170,7 @@ export function uploadVideoCommon(formData) {
 }
 
 //微信下载图片
- export function downloadWechatImage(imgUrl, module = "") {
+export function downloadWechatImage(imgUrl, module = "") {
   return request({
     url: "/api/common/download_wechat_image",
     method: "post",
@@ -175,8 +180,6 @@ export function uploadVideoCommon(formData) {
     },
   });
 }
-
-
 
 export function categoryTree() {
   return request({
@@ -200,7 +203,23 @@ export function deleteCategory(id) {
   });
 }
 
-//增加产品机器人
+//======= 产品相关接口（使用统一上传）=======//
+
+// 使用统一接口，分别用于不同类型（为了保持前端调用的一致性）
+export function uploadRobotImage(data) {
+  return uploadImageCommon(data, "robot");
+}
+
+export function uploadRobotTableImage(data) {
+  return uploadImageCommon(data, "robot_table");
+}
+
+export function uploadSportImage(data) {
+  return uploadImageCommon(data, "sport");
+}
+
+//======= 产品CRUD =======//
+
 export function saveProductRobot(data) {
   return request({
     url: "/api/product/robot/save",
@@ -209,7 +228,6 @@ export function saveProductRobot(data) {
   });
 }
 
-//增加产品运动控制器
 export function saveProductsSport(data) {
   return request({
     url: "/api/product/sport/save",
@@ -226,7 +244,7 @@ export function productList(params) {
   });
 }
 
-// 删除产品
+// 删除产品（会自动清理关联图片）
 export function deleteProduct(id) {
   return request({
     url: `/api/product/${id}`,
@@ -241,7 +259,7 @@ export function getProductDetail(robotType, id) {
   });
 }
 
-//abuout swiper
+//about swiper
 export function aboutImage() {
   return request({
     url: "/api/about/banners",
