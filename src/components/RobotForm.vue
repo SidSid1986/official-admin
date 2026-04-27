@@ -1,288 +1,167 @@
 <template>
-  <div class="robot-form-wrapper">
-    <el-divider content-position="left">🤖 机器人详细参数录入</el-divider>
+  <div class="robot-form">
+    <el-divider content-position="left">🤖 机器人固定参数</el-divider>
+    <el-row :gutter="20">
+      <el-col :span="12">
+        <el-form-item label="最大臂展">
+          <el-input v-model="localModel.maxArmSpan" clearable />
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="最大负载">
+          <el-input v-model="localModel.maxWeight" clearable />
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="轴数">
+          <el-input v-model="localModel.switchNum" clearable />
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="本体重量">
+          <el-input v-model="localModel.weight" clearable />
+        </el-form-item>
+      </el-col>
 
-    <el-form :model="formData" label-width="140px" size="default">
-      <el-row :gutter="20">
+      <el-col :span="24">
+        <el-form-item label="固定参数主图">
+          <el-upload action="#" :auto-upload="false" :limit="1" :file-list="innerImageList" list-type="picture-card"
+            :on-change="handleInnerImageChange" :on-remove="handleInnerImageRemove" :before-upload="beforeUpload">
+            <el-icon><Plus /></el-icon>
+          </el-upload>
+        </el-form-item>
+      </el-col>
 
-        <!-- 型号 -->
-        <el-col :span="24">
-          <el-form-item label="产品型号" prop="robotName">
-            <el-input v-model="formData.robotName" placeholder="例如：IER50-1200-SR" style="font-weight: bold;" />
-          </el-form-item>
-        </el-col>
+      <el-col :span="24">
+        <el-form-item label="产品多图">
+          <el-upload action="#" :auto-upload="false" :file-list="imagesList" list-type="picture-card"
+            :on-change="handleImagesChange" :on-remove="handleImagesRemove" :limit="10" :before-upload="beforeUpload">
+            <el-icon><Plus /></el-icon>
+          </el-upload>
+        </el-form-item>
+      </el-col>
+    </el-row>
 
-        <!-- 核心参数 -->
-        <el-col :span="6">
-          <el-form-item label="最大臂展">
-            <el-input v-model="formData.maxArmSpan" placeholder="例如：1200MM" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="最大负载">
-            <el-input v-model="formData.maxWeight" placeholder="例如：50KG" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="轴数">
-            <el-input v-model="formData.switchNum" placeholder="例如：4轴" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="本体重量">
-            <el-input v-model="formData.weight" placeholder="例如：145kg" />
-          </el-form-item>
-        </el-col>
+    <el-divider content-position="left">📋 自定义参数表格</el-divider>
+    <div style="margin-bottom:12px">
+      <el-button type="success" icon="Plus" @click="addCustomTable">添加表格</el-button>
+    </div>
 
-        <!--  精度与防护 -->
-        <el-col :span="12">
-          <el-form-item label="重复定位精度">
-            <el-input v-model="formData.perprecision" type="textarea" :rows="2" placeholder="例如：J1+J2:±0.025mm..." />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="防护等级">
-   
-            <el-input v-model="formData.IP" placeholder="例如：IP54" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="安装形式">
-            <el-input v-model="formData.insType" placeholder="例如：地面" />
-          </el-form-item>
-        </el-col>
-
-        <!--  驱动与认证 -->
-        <el-col :span="12">
-          <el-form-item label="驱动方式">
-            <el-input v-model="formData.driveType" placeholder="例如：AC伺服电机驱动" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="支持认证">
-            <el-input v-model="formData.authSupport" placeholder="例如：CE, UL, TUV" />
-          </el-form-item>
-        </el-col>
-
-        <!--  安装条件 -->
-        <el-col :span="24">
-          <el-form-item label="安装条件">
-            <el-input v-model="formData.insRequire" type="textarea" :rows="6" placeholder="请输入温度、湿度等详细信息..." />
-          </el-form-item>
-        </el-col>
-
-        <!--  备注 -->
-        <el-col :span="24">
-          <el-form-item label="备注说明">
-            <el-input v-model="formData.remark" type="textarea" :rows="2" placeholder="其他补充信息" />
-          </el-form-item>
-        </el-col>
-
-        <!--  图片上传  -->
-        <el-col :span="24">
-          <el-form-item label="产品详情图片">
-            <el-upload action="#" :auto-upload="false" :limit="1" :file-list="fileList" list-type="picture-card"
-              :on-change="handleFileChange" :on-remove="handleRemove" :disabled="uploading">
-              <div v-if="uploading" class="uploading-status">
-                <el-icon class="is-loading">
-                  <Loading />
-                </el-icon>
-                <span>上传中...</span>
-              </div>
-              <el-icon v-else>
-                <Plus />
-              </el-icon>
-            </el-upload>
-
-            <div class="uploader-tip">
-              <span v-if="formData.detailImg">
-                 图片已上传成功<br>
-                地址：<b>{{ formData.detailImg }}</b>
-              </span>
-              <span v-else-if="uploading">
-                ⏳ 正在上传，请稍候...
-              </span>
-              <span v-else>
-                选择图片后将自动上传至服务器
-              </span>
-            </div>
-          </el-form-item>
-        </el-col>
-
-      </el-row>
-    </el-form>
+    <div v-for="(t, idx) in localTables" :key="t.key" style="padding:16px;border:1px solid #e4e7ed;border-radius:8px;margin-bottom:16px">
+      <el-input v-model="t.name" placeholder="表格名" style="margin-bottom:10px" />
+      <el-table :data="t.rows" border>
+        <el-table-column label="参数名"><template #default="s"><el-input v-model="s.row.key" /></template></el-table-column>
+        <el-table-column label="参数值"><template #default="s"><el-input v-model="s.row.value" /></template></el-table-column>
+        <el-table-column label="操作"><template #default><el-button type="danger" @click="removeRow(idx, $index)">删</el-button></template></el-table-column>
+      </el-table>
+      <div style="margin-top:10px">
+        <el-button size="small" @click="addRow(idx)">添加行</el-button>
+        <el-button size="small" type="danger" @click="removeTable(idx)">删表格</el-button>
+      </div>
+      <div style="margin-top:10px">
+        <el-upload action="#" :auto-upload="false" :file-list="t.imageList" list-type="picture-card"
+          :on-change="(f) => handleTableImageChange(f, idx)"
+          :on-remove="(f) => handleTableImageRemove(f, idx)">
+          <el-icon><Plus /></el-icon>
+        </el-upload>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, watch, ref } from 'vue';
-import { Plus, Loading } from '@element-plus/icons-vue';
-import { ElMessage } from 'element-plus';
+import { ref, computed, watch } from 'vue';
+import { ElIcon, ElMessage } from 'element-plus';
+import { Plus } from '@element-plus/icons-vue';
 
-import { uploadImageCommon } from '@/api/common';
-
-const emit = defineEmits(['update:modelValue']);
 const props = defineProps({
-  modelValue: {
-    type: Object,
-    default: () => ({})
-  }
+  modelValue: { type: Object, required: true },
+  tables: { type: Array, required: true },
+  uploadTableImageApi: Function,
 });
 
-const fileList = ref([]);
-const uploading = ref(false); // 上传状态锁
+const emit = defineEmits(['update:modelValue', 'update:tables']);
+const localModel = computed({ get: () => props.modelValue, set: v => emit('update:modelValue', v) });
+const localTables = computed({ get: () => props.tables, set: v => emit('update:tables', v) });
 
-// 初始化表单数据
-const formData = reactive({
-  robotName: '',
-  switchNum: '',
-  maxWeight: '',
-  maxArmSpan: '',
-  perprecision: '',
-  weight: '',
-  IP: '',      
-  insType: '',
-  driveType: '',
-  insRequire: '',
-  authSupport: '',
-  remark: '',
-  detailImg: '' // 存储后端返回的真实 URL
-});
+const innerImageList = ref([]);
+const imagesList = ref([]);
 
-  //处理文件选择 
-const handleFileChange = async (uploadFile) => {
-  const rawFile = uploadFile.raw;
+const generateUniqueId = () => Date.now() + '' + Math.random();
 
-  if (!rawFile) return;
+const addCustomTable = () => localTables.value = [...localTables.value, { name: '', rows: [{ key: '', value: '' }], images: [], imageList: [], key: generateUniqueId() }];
+const removeTable = (i) => { const t = [...localTables.value]; t.splice(i, 1); localTables.value = t; };
+const addRow = (i) => { const t = [...localTables.value]; t[i].rows.push({ key: '', value: '' }); localTables.value = t; };
+const removeRow = (i, j) => { const t = [...localTables.value]; t[i].rows.splice(j, 1); localTables.value = t; };
 
-  //  基础校验
-  if (!rawFile.type.startsWith('image/')) {
-    ElMessage.error('只能上传图片文件！');
-    fileList.value = [];
-    formData.detailImg = '';
-    return;
-  }
-
-  //  锁定状态
-  uploading.value = true;
-  fileList.value = [uploadFile]; // 先显示本地预览
-
-  try {
-    //  构建 FormData
-    const fd = new FormData();
-    fd.append('file', rawFile);
-    fd.append('module', 'product'); //  添加 module 参数
-
-    //  上传接口
-    console.log(' 开始上传详情图片...');
-    const res = await uploadImageCommon(fd);
-
-    if (res.code === 200 && res.data && res.data.url) {
-      const realUrl = res.data.url;
-
-      // 更新数据
-      formData.detailImg = realUrl;
-
-      // 更新 fileList 中的 url，确保 el-upload 能正确显示回显
-      fileList.value = [{
-        name: rawFile.name,
-        url: realUrl
-      }];
-
-      ElMessage.success('图片上传成功');
-      console.log('  图片上传完成，URL:', realUrl);
-    } else {
-      throw new Error(res.msg || '上传失败');
-    }
-
-  } catch (error) {
-    console.error('图片上传错误:', error);
-    ElMessage.error('图片上传失败：' + (error.message || '未知错误'));
-    // 失败则清空
-    fileList.value = [];
-    formData.detailImg = '';
-  } finally {
-    uploading.value = false;
-  }
-};
-//处理文件删除
-const handleRemove = () => {
-  fileList.value = [];
-  formData.detailImg = '';
-  console.log('图片已移除');
+const beforeUpload = (f) => {
+  if (!f.type.startsWith('image/')) return ElMessage.error('只能图片'), false;
+  if (f.size > 5 * 1024 * 1024) return ElMessage.error('最大5M'), false;
+  return true;
 };
 
- 
-watch(formData, (newVal) => {
-  emit('update:modelValue', { ...newVal });
-}, { deep: true });
-
-// 监听父组件传入的值 (编辑模式回显)
-watch(() => props.modelValue, (newVal) => {
-  if (newVal && Object.keys(newVal).length > 0) {
-    // 合并数据
-    Object.assign(formData, newVal);
-
-    // 如果有图片地址， fileList 用于展示
-    if (formData.detailImg) {
-      fileList.value = [{
-        name: 'detail-image.png',
-        url: formData.detailImg
-      }];
-    } else {
-      fileList.value = [];
-    }
+const handleTableImageChange = async (f, i) => {
+  const t = localTables.value[i];
+  const list = [...t.imageList, { ...f, status: 'uploading' }];
+  localTables.value[i].imageList = list;
+  const fd = new FormData();
+  fd.append('file', f.raw);
+  const res = await props.uploadTableImageApi(fd);
+  if (res.code === 200) {
+    t.images.push({ url: res.data.url, uid: f.uid });
+    list[list.length - 1] = { uid: f.uid, url: res.data.url, status: 'success' };
+    ElMessage.success('ok');
   }
-}, { immediate: true, deep: true });
+};
+
+const handleTableImageRemove = (f, i) => {
+  const t = localTables.value[i];
+  t.imageList = t.imageList.filter(x => x.uid !== f.uid);
+  t.images = t.images.filter(x => x.uid !== f.uid);
+};
+
+const handleInnerImageChange = async (f) => {
+  innerImageList.value = [f];
+  const fd = new FormData();
+  fd.append('file', f.raw);
+  const res = await props.uploadTableImageApi(fd);
+  if (res.code === 200) {
+    localModel.value.img = res.data.url;
+    innerImageList.value = [{ url: res.data.url }];
+  }
+};
+
+const handleInnerImageRemove = () => {
+  localModel.value.img = '';
+  innerImageList.value = [];
+};
+
+const handleImagesChange = async (f) => {
+  const fd = new FormData();
+  fd.append('file', f.raw);
+  const res = await props.uploadTableImageApi(fd);
+  if (res.code === 200) {
+    const arr = localModel.value.images || [];
+    arr.push(res.data.url);
+    localModel.value.images = arr;
+  }
+};
+
+const handleImagesRemove = (f) => {
+  const arr = (localModel.value.images || []).filter(u => u !== f.url);
+  localModel.value.images = arr;
+};
+
+watch(() => localModel.value.img, v => {
+  innerImageList.value = v ? [{ url: v }] : [];
+}, { immediate: true });
+
+watch(() => localModel.value.images, v => {
+  imagesList.value = (v || []).map(u => ({ url: u }));
+}, { immediate: true });
 
 </script>
 
-<style scoped lang="scss">
-.robot-form-wrapper {
-  background-color: #f9fafc;
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #e4e7ed;
-  margin-top: 15px;
-
-  :deep(.el-form-item__label) {
-    font-weight: 600;
-    color: #606266;
-  }
-
-  :deep(.el-textarea__inner) {
-    font-family: "Courier New", Courier, monospace;
-  }
-
-  .uploader-tip {
-    margin-top: 8px;
-    font-size: 12px;
-    color: #909399;
-    line-height: 1.5;
-
-    b {
-      color: #409EFF;
-      word-break: break-all;
-    }
-  }
-
-  .uploading-status {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    color: #409EFF;
-  }
-
-  :deep(.el-upload--picture-card) {
-    width: 100px;
-    height: 100px;
-  }
-
-  :deep(.el-upload-list--picture-card .el-upload-list__item) {
-    width: 100px;
-    height: 100px;
-  }
-}
+<style scoped>
+.robot-form { padding: 10px 0; }
 </style>

@@ -157,6 +157,7 @@ const handleCreated = (editor) => {
 };
 
 const handleChange = (editor) => {
+  console.log(editor);
   const html = editor.getHtml();
   valueHtml.value = html;
   emit("update:modelValue", html);

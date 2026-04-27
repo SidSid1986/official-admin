@@ -1,6 +1,5 @@
 <template>
   <div class="product-list-container">
-    <!-- 顶部搜索与操作栏 -->
     <el-card class="search-card" shadow="hover">
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="产品名称">
@@ -30,21 +29,17 @@
       </el-form>
     </el-card>
 
-    <!-- 数据表格 -->
     <el-card class="table-card" shadow="never">
       <el-table :data="tableData" height="50vh" style="width: 100%" v-loading="loading" border stripe
         header-cell-class-name="table-header-gray">
 
-        <!-- 图片列 -->
         <el-table-column label="产品图片" width="120" align="center">
           <template #default="scope">
             <div class="img-wrapper">
               <el-image v-if="scope.row.mainImageUrl" :src="scope.row.mainImageUrl" fit="cover" class="product-thumb"
                 :preview-src-list="[scope.row.mainImageUrl]">
                 <template #error>
-                  <div class="image-error"><el-icon>
-                      <Picture />
-                    </el-icon></div>
+                  <div class="image-error"><el-icon><Picture /></el-icon></div>
                 </template>
               </el-image>
               <span v-else class="no-img">无图片</span>
@@ -76,7 +71,6 @@
           </template>
         </el-table-column>
 
-
         <el-table-column prop="ifMain" label="是否放置首页" width="120" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.ifMain === true ? 'success' : 'danger'" size="small" effect="dark">
@@ -100,7 +94,6 @@
         </el-table-column>
       </el-table>
 
-      <!-- 分页器 -->
       <div class="pagination-container">
         <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :page-sizes="[10, 20, 50, 100]"
           layout="total, sizes, prev, pager, next, jumper" :total="total" @size-change="handleSizeChange"
@@ -115,40 +108,33 @@ import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { Search, Refresh, Plus, Edit, Delete, Picture } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { productList, deleteProduct, categoryTree } from '@/api/common'; // 引入 API
+import { productList, deleteProduct, categoryTree } from '@/api/common';
 
 const router = useRouter();
 
-// --- 状态定义 ---
 const loading = ref(false);
 const tableData = ref([]);
 const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(10);
 
-// 搜索表单
 const searchForm = reactive({
   productName: '',
   modelNumber: '',
-  categoryIds: [], // 级联选择器绑定的值 [parentId, childId]
-  parentId: null,  // 传递给后端的父级ID
-  childId: null    // 传递给后端的子级ID
+  categoryIds: [],
+  categoryId: null  // 只用这一个！
 });
 
-// 分类选项 
 const categoryOptions = ref([]);
 
-
-// 加载分类树 (初始化搜索框)
 const fetchCategories = async () => {
   try {
     const res = await categoryTree();
     if (res.code === 200) {
-      // 转换格式：后端返回 {id, label, children...} -> 前端需要 {value: id, label, children...}
       const transform = (nodes) => {
         return nodes.map(node => ({
           value: node.id,
-          label: node.label, //  node.type_name 显示类型
+          label: node.label,
           children: node.children ? transform(node.children) : []
         }));
       };
@@ -159,7 +145,6 @@ const fetchCategories = async () => {
   }
 };
 
-// 加载产品数据
 const fetchData = async () => {
   loading.value = true;
   try {
@@ -167,9 +152,7 @@ const fetchData = async () => {
       page: currentPage.value,
       page_size: pageSize.value,
       keyword: searchForm.productName || undefined,
-      model_number: searchForm.modelNumber || undefined,
-      category_id: searchForm.childId || undefined,
-      parent_category_id: searchForm.parentId || undefined
+      category_id: searchForm.categoryId || undefined
     };
 
     const res = await productList(params);
@@ -186,37 +169,26 @@ const fetchData = async () => {
   }
 };
 
-// 级联选择器变化处理
+// ✅ 修复：只取最后一级
 const handleCategoryChange = (values) => {
   if (!values || values.length === 0) {
-    searchForm.parentId = null;
-    searchForm.childId = null;
-  } else if (values.length === 1) {
-    // 只选了父级
-    searchForm.parentId = values[0];
-    searchForm.childId = null;
+    searchForm.categoryId = null;
   } else {
-    // 选了父子级
-    searchForm.parentId = values[0];
-    searchForm.childId = values[1];
+    searchForm.categoryId = values[values.length - 1];
   }
   fetchData();
-
 };
 
-// 搜索
 const handleSearch = () => {
   currentPage.value = 1;
   fetchData();
 };
 
-// 重置
 const handleReset = () => {
   searchForm.productName = '';
   searchForm.modelNumber = '';
   searchForm.categoryIds = [];
-  searchForm.parentId = null;
-  searchForm.childId = null;
+  searchForm.categoryId = null;
   handleSearch();
 };
 
@@ -226,7 +198,6 @@ const handleSizeChange = (val) => {
   fetchData();
 };
 
-// 跳转
 const goToCreate = () => {
   router.push('/cms/productAddEdit');
 };
@@ -235,7 +206,6 @@ const handleEdit = (row) => {
   router.push(`/cms/productAddEdit/${row.productType}/${row.id}`);
 };
 
-// 删除
 const handleDelete = (row) => {
   ElMessageBox.confirm(`确定要删除产品 "${row.productName}" 吗？`, '警告', {
     confirmButtonText: '确定删除',
@@ -245,7 +215,6 @@ const handleDelete = (row) => {
     try {
       await deleteProduct(row.id);
       ElMessage.success('删除成功');
-      // 如果当前页只剩一个且不是第一页，回退一页
       if (tableData.value.length === 1 && currentPage.value > 1) {
         currentPage.value--;
       }
@@ -256,7 +225,6 @@ const handleDelete = (row) => {
   });
 };
 
-// 辅助函数
 const getTypeTag = (type) => {
   const map = { 'robot': 'warning', 'sport': 'success', 'servo': 'info', 'sensor': 'primary' };
   return map[type] || 'info';

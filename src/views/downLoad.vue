@@ -152,7 +152,7 @@ const handleCurrentChange = (val) => {
 
 //  上传前校验  
 const beforeUpload = (file) => {
-  const maxSize = 5 * 1024 * 1024;
+  const maxSize = 100 * 1024 * 1024;
   const allowedExts = ['doc', 'docx', 'pdf', 'zip', 'rar'];
   const extension = file.name.split('.').pop().toLowerCase();
 

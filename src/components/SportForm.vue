@@ -1,329 +1,157 @@
 <template>
   <div class="sport-form-wrapper">
-    <el-divider content-position="left">🎛️ 运动控制器参数录入</el-divider>
-
-    <el-form :model="formData" label-width="140px" size="default">
-
-      <!--  核心基础信息 -->
+    <el-divider content-position="left">🎛️ 运动控制器</el-divider>
+    <el-form :model="localModel" label-width="140px">
       <el-row :gutter="20">
         <el-col :span="24">
-          <el-form-item label="产品型号名称" prop="name">
-            <el-input v-model="formData.name" placeholder="例如：MC404-Z 4轴高性能运动控制器"
-              style="font-weight: bold; font-size: 16px;" />
-          </el-form-item>
+          <el-form-item label="产品名称"><el-input v-model="localModel.name" /></el-form-item>
         </el-col>
-
         <el-col :span="24">
-          <el-form-item label="产品详情描述">
-            <el-input v-model="formData.detail" type="textarea" :rows="4" placeholder="请输入基于TRIO的高性能ARM...等详细技术描述" />
-          </el-form-item>
+          <el-form-item label="详情"><el-input v-model="localModel.detail" type="textarea" :rows="4" /></el-form-item>
         </el-col>
-
         <el-col :span="12">
-          <el-form-item label="产品详情图">
-            <el-upload action="#" :auto-upload="false" :limit="1" :file-list="mainImageList" list-type="picture-card"
-              :on-change="handleMainImageChange" :on-remove="handleMainImageRemove" :disabled="uploading">
-              <div v-if="uploading" class="uploading-status">
-                <el-icon class="is-loading">
-                  <Loading />
-                </el-icon>
-                <span>上传中...</span>
-              </div>
-              <el-icon v-else>
-                <Plus />
-              </el-icon>
+          <el-form-item label="详情图">
+            <el-upload action="#" :auto-upload="false" :file-list="mainImageList" list-type="picture-card"
+              :on-change="handleMainImageChange" :on-remove="handleMainImageRemove">
+              <el-icon><Plus /></el-icon>
             </el-upload>
-
-            <div class="upload-tip" v-if="formData.img">
-               图片已上传成功<br>
-              地址：<span class="url-text">{{ formData.img }}</span>
-            </div>
-            <div class="upload-tip" v-else-if="uploading">
-              正在上传，请稍候...
-            </div>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="多图">
+            <el-upload action="#" :auto-upload="false" :file-list="imagesList" list-type="picture-card"
+              :on-change="handleImagesChange" :on-remove="handleImagesRemove">
+              <el-icon><Plus /></el-icon>
+            </el-upload>
           </el-form-item>
         </el-col>
       </el-row>
 
-      <el-divider content-position="left">核心卖点 (Line Info)</el-divider>
+      <el-divider>核心卖点</el-divider>
+      <el-table :data="localSellingPoints" border>
+        <el-table-column label="序号" type="index" /><
+        <el-table-column label="标题"><template #default="s"><el-input v-model="s.row.title" /></template></el-table-column>
+        <el-table-column label="内容"><template #default="s"><el-input v-model="s.row.content" /></template></el-table-column>
+        <el-table-column label="操作"><template #default><el-button type="danger" @click="removeSellingPoint($index)">删</el-button></template></el-table-column>
+      </el-table>
+      <el-button style="margin:10px 0" @click="addSellingPoint">添加卖点</el-button>
 
-      <!--  三大卖点 -->
-      <el-row :gutter="20">
-        <el-col :span="8">
-          <el-form-item label="卖点1标题">
-            <el-input v-model="titles.title1" placeholder="例如：编程灵活" disabled style="background:#f5f7fa" />
-          </el-form-item>
-          <el-form-item label="卖点1内容">
-            <el-input v-model="formData.line1" type="textarea" :rows="3" placeholder="支持TRIO Basic以及IEC..." />
-          </el-form-item>
-        </el-col>
-        <el-col :span="8">
-          <el-form-item label="卖点2标题">
-            <el-input v-model="titles.title2" placeholder="例如：通讯丰富" disabled style="background:#f5f7fa" />
-          </el-form-item>
-          <el-form-item label="卖点2内容">
-            <el-input v-model="formData.line2" type="textarea" :rows="3" placeholder="内置ETHERNET-IP/MODBUS..." />
-          </el-form-item>
-        </el-col>
-        <el-col :span="8">
-          <el-form-item label="卖点3标题">
-            <el-input v-model="titles.title3" placeholder="例如：认证齐全" disabled style="background:#f5f7fa" />
-          </el-form-item>
-          <el-form-item label="卖点3内容">
-            <el-input v-model="formData.line3" type="textarea" :rows="3" placeholder="ROHS、UL、CE认证齐全" />
-          </el-form-item>
-        </el-col>
-      </el-row>
+      <el-divider>自定义表格</el-divider>
+      <el-button style="margin-bottom:10px" @click="addCustomTable">添加表格</el-button>
 
-      <el-divider content-position="left">🔌 配件列表 (Sport Pram)</el-divider>
-
-      <!--  配件列表 动态表格-->
-      <el-row :gutter="20">
-        <el-col :span="24">
-          <div class="dynamic-table-container">
-            <el-table :data="formData.sportPram" border style="width: 100%" size="small">
-              <el-table-column label="ID" width="80" prop="id" />
-              <el-table-column label="配件名称 (lineName)" min-width="200">
-                <template #default="scope">
-                  <el-input v-model="scope.row.lineName" placeholder="例如：P317-P327" size="small" />
-                </template>
-              </el-table-column>
-              <el-table-column label="规格/描述 (lineValue)" min-width="200">
-                <template #default="scope">
-                  <el-input v-model="scope.row.lineValue" placeholder="例如：CAN I/O 模块" size="small" />
-                </template>
-              </el-table-column>
-              <el-table-column label="操作" width="80" fixed="right">
-                <template #default="scope">
-                  <el-button type="danger" link size="small" @click="removePram(scope.$index)">删除</el-button>
-                </template>
-              </el-table-column>
-            </el-table>
-            <el-button type="primary" link @click="addPram" style="margin-top: 10px">+ 添加一行配件</el-button>
-          </div>
-        </el-col>
-      </el-row>
-
-      <el-divider content-position="left">⚙️ 轴配置选项 (Sport Pram Two)</el-divider>
-
-      <!--  轴配置 动态表格-->
-      <el-row :gutter="20">
-        <el-col :span="24">
-          <div class="dynamic-table-container">
-            <el-table :data="formData.sportPramTwo" border style="width: 100%" size="small">
-              <el-table-column label="ID" width="80" prop="id" />
-              <el-table-column label="配置项 (lineName)" min-width="200">
-                <template #default="scope">
-                  <el-input v-model="scope.row.lineName" placeholder="例如：轴0 / 产品选项" size="small" />
-                </template>
-              </el-table-column>
-              <el-table-column label="配置值 (lineValue)" min-width="200">
-                <template #default="scope">
-                  <el-input v-model="scope.row.lineValue" placeholder="例如：标准 / 扩展轴 / P855" size="small" />
-                </template>
-              </el-table-column>
-              <el-table-column label="操作" width="80" fixed="right">
-                <template #default="scope">
-                  <el-button type="danger" link size="small" @click="removePramTwo(scope.$index)">删除</el-button>
-                </template>
-              </el-table-column>
-            </el-table>
-            <el-button type="primary" link @click="addPramTwo" style="margin-top: 10px">+ 添加一行配置</el-button>
-          </div>
-        </el-col>
-      </el-row>
-
+      <div v-for="(t, idx) in localTables" :key="t.key" style="padding:16px;border:1px solid #e4e7ed;border-radius:8px;margin-bottom:16px">
+        <el-input v-model="t.name" placeholder="表格名" style="margin-bottom:10px" />
+        <el-table :data="t.rows" border>
+          <el-table-column label="参数名"><template #default="s"><el-input v-model="s.row.key" /></template></el-table-column>
+          <el-table-column label="参数值"><template #default="s"><el-input v-model="s.row.value" /></template></el-table-column>
+          <el-table-column label="操作"><template #default><el-button type="danger" @click="removeRow(idx, $index)">删</el-button></template></el-table-column>
+        </el-table>
+        <div style="margin-top:10px">
+          <el-button size="small" @click="addRow(idx)">添加行</el-button>
+          <el-button size="small" type="danger" @click="removeTable(idx)">删表格</el-button>
+        </div>
+        <div style="margin-top:10px">
+          <el-upload action="#" :auto-upload="false" :file-list="t.imageList" list-type="picture-card"
+            :on-change="(f) => handleTableImageChange(f, idx)"
+            :on-remove="(f) => handleTableImageRemove(f, idx)">
+            <el-icon><Plus /></el-icon>
+          </el-upload>
+        </div>
+      </div>
     </el-form>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref, watch } from 'vue';
-import { Plus, Loading } from '@element-plus/icons-vue';
+import { ref, computed, watch } from 'vue';
+import { Plus } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
- 
 import { uploadImageCommon } from '@/api/common';
 
-const emit = defineEmits(['update:modelValue']);
 const props = defineProps({
-  modelValue: {
-    type: Object,
-    default: () => ({})
-  }
+  modelValue: { type: Object, default: () => ({ name: '', detail: '', img: '', images: [] }) },
+  uploadTableImageApi: Function,
+  customTables: Array,
+  sellingPoints: Array,
 });
 
-const titles = reactive({
-  title1: '编程灵活',
-  title2: '通讯丰富',
-  title3: '认证齐全'
-});
+const emit = defineEmits(['update:modelValue', 'update:customTables', 'update:selling-points']);
+
+const localModel = computed({ get: () => props.modelValue, set: v => emit('update:modelValue', v) });
+const localTables = computed({ get: () => props.customTables || [], set: v => emit('update:customTables', v) });
+const localSellingPoints = computed({ get: () => props.sellingPoints || [], set: v => emit('update:selling-points', v) });
 
 const mainImageList = ref([]);
-const uploading = ref(false); // 上传状态锁
+const imagesList = ref([]);
+const generateUniqueId = () => Date.now() + '' + Math.random();
 
-const formData = reactive({
-  id: Date.now(),
-  name: '',
-  detail: '',
-  line1: '',
-  line2: '',
-  line3: '',
-  img: '', // 存储后端返回的真实 URL
+const addSellingPoint = () => localSellingPoints.value = [...localSellingPoints.value, { title: '', content: '' }];
+const removeSellingPoint = (i) => { const a = [...localSellingPoints.value]; a.splice(i, 1); localSellingPoints.value = a; };
+const addCustomTable = () => localTables.value = [...localTables.value, { name: '', rows: [{ key: '', value: '' }], images: [], imageList: [], key: generateUniqueId() }];
+const removeTable = (i) => { const a = [...localTables.value]; a.splice(i, 1); localTables.value = a; };
+const addRow = (i) => { const a = [...localTables.value]; a[i].rows.push({ key: '', value: '' }); localTables.value = a; };
+const removeRow = (i, j) => { const a = [...localTables.value]; a[i].rows.splice(j, 1); localTables.value = a; };
 
-  sportPram: [
-    { id: 1, lineName: '', lineValue: '' }
-  ],
-  sportPramTwo: [
-    { id: 1, lineName: '', lineValue: '' }
-  ]
-});
+const beforeUpload = (f) => f.type.startsWith('image/') && f.size < 5 * 1024 * 1024 || (ElMessage.error('图片≤5M'), false);
 
-//处理文件选择变化
-const handleMainImageChange = async (uploadFile) => {
-  const rawFile = uploadFile.raw;
-
-  if (!rawFile) return;
-
-  // 1. 基础校验
-  if (!rawFile.type.startsWith('image/')) {
-    ElMessage.error('只能上传图片！');
-    mainImageList.value = [];
-    formData.img = '';
-    return;
-  }
-
-  // 2. 锁定状态
-  uploading.value = true;
-  mainImageList.value = [uploadFile]; // 先显示本地预览
-
-  try {
-    // 3. 构建 FormData
-    const fd = new FormData();
-    fd.append('file', rawFile);
-    fd.append('module', 'product');
-
-    // 4. 调用上传接口
-    console.log('开始上传控制器主图...');
-    const res = await uploadImageCommon(fd);
-
-    if (res.code === 200 && res.data && res.data.url) {
-      const realUrl = res.data.url;
-
-   
-      formData.img = realUrl;
-
-      // 更新 fileList 中的 url，确保 el-upload 能正确显示回显
-      mainImageList.value = [{
-        name: rawFile.name,
-        url: realUrl
-      }];
-
-      ElMessage.success('图片上传成功');
-      console.log('  图片上传完成，URL:', realUrl);
-    } else {
-      throw new Error(res.msg || '上传失败');
-    }
-
-  } catch (error) {
-    console.error('图片上传错误:', error);
-    ElMessage.error('图片上传失败：' + (error.message || '未知错误'));
-    // 失败则清空
-    mainImageList.value = [];
-    formData.img = '';
-  } finally {
-    uploading.value = false;
+const handleMainImageChange = async (f) => {
+  const fd = new FormData();
+  fd.append('file', f.raw);
+  const res = await uploadImageCommon(fd);
+  if (res.code === 200) {
+    localModel.value.img = res.data.url;
+    mainImageList.value = [{ url: res.data.url }];
   }
 };
 
 const handleMainImageRemove = () => {
+  localModel.value.img = '';
   mainImageList.value = [];
-  formData.img = '';
 };
 
-//表格操作逻辑
-const addPram = () => {
-  const newId = formData.sportPram.length > 0 ? Math.max(...formData.sportPram.map(i => i.id)) + 1 : 1;
-  formData.sportPram.push({ id: newId, lineName: '', lineValue: '' });
-};
-
-const removePram = (index) => {
-  formData.sportPram.splice(index, 1);
-};
-
-const addPramTwo = () => {
-  const newId = formData.sportPramTwo.length > 0 ? Math.max(...formData.sportPramTwo.map(i => i.id)) + 1 : 1;
-  formData.sportPramTwo.push({ id: newId, lineName: '', lineValue: '' });
-};
-
-const removePramTwo = (index) => {
-  formData.sportPramTwo.splice(index, 1);
-};
-
-//双向绑定同步
-watch(formData, (newVal) => {
-  const dataToSend = JSON.parse(JSON.stringify(newVal));
-  emit('update:modelValue', dataToSend);
-}, { deep: true });
-
-// 监听父组件传入的值 (编辑模式)
-watch(() => props.modelValue, (newVal) => {
-  if (newVal && Object.keys(newVal).length > 0) {
-    Object.assign(formData, newVal);
-
-    if (formData.img) {
-      mainImageList.value = [{ name: 'product-img', url: formData.img }];
-    } else {
-      mainImageList.value = [];
-    }
+const handleImagesChange = async (f) => {
+  const fd = new FormData();
+  fd.append('file', f.raw);
+  const res = await props.uploadTableImageApi(fd);
+  if (res.code === 200) {
+    const arr = localModel.value.images || [];
+    arr.push(res.data.url);
+    localModel.value.images = arr;
   }
-}, { immediate: true, deep: true });
+};
+
+const handleImagesRemove = (f) => {
+  const arr = (localModel.value.images || []).filter(u => u !== f.url);
+  localModel.value.images = arr;
+};
+
+const handleTableImageChange = async (f, i) => {
+  const t = localTables.value[i];
+  t.imageList.push({ ...f, status: 'uploading' });
+  const fd = new FormData();
+  fd.append('file', f.raw);
+  const res = await props.uploadTableImageApi(fd);
+  if (res.code === 200) {
+    t.images.push({ url: res.data.url, uid: f.uid });
+    t.imageList = t.imageList.map(x => x.uid === f.uid ? { uid: f.uid, url: res.data.url, status: 'success' } : x);
+  }
+};
+
+const handleTableImageRemove = (f, i) => {
+  const t = localTables.value[i];
+  t.imageList = t.imageList.filter(x => x.uid !== f.uid);
+  t.images = t.images.filter(x => x.uid !== f.uid);
+};
+
+watch(() => localModel.value.img, v => (mainImageList.value = v ? [{ url: v }] : []), { immediate: true });
+watch(() => localModel.value.images, v => (imagesList.value = (v || []).map(x => ({ url: x }))), { immediate: true });
 
 </script>
 
 <style scoped lang="scss">
 .sport-form-wrapper {
-  background-color: #f9fafc;
+  background: #f9fafc;
   padding: 20px;
   border-radius: 8px;
-  border: 1px solid #e4e7ed;
-  margin-top: 15px;
-
-  :deep(.el-form-item__label) {
-    font-weight: 600;
-    color: #606266;
-  }
-
-  :deep(.el-textarea__inner) {
-    font-family: "SourceHanSansCN-Regular", sans-serif;
-  }
-
-  .upload-tip {
-    margin-top: 8px;
-    font-size: 12px;
-    color: #909399;
-    line-height: 1.5;
-
-    .url-text {
-      color: #409EFF;
-      word-break: break-all;
-      font-family: monospace;
-    }
-  }
-
-  .uploading-status {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    color: #409EFF;
-  }
-
-  .dynamic-table-container {
-    border: 1px solid #ebeef5;
-    padding: 10px;
-    border-radius: 4px;
-    background: #fff;
-  }
 }
 </style>
